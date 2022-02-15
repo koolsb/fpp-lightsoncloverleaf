@@ -19,6 +19,7 @@ $currentlyPlayingInRemote = "";
 $nextScheduledInRemote= "";
 $requestFetchTime = "";
 $remoteSequencesCleared = false;
+$remotePlaylistModified = 0;
 
 $baseUrl = urldecode($pluginSettings['baseUrl']);
 $apiKey = urldecode($pluginSettings['apiKey']);
@@ -88,16 +89,17 @@ while(true) {
   //check if remote playlist has changed
   clearstatcache();
   $remotePlaylistFile = "/home/fpp/media/playlists/" . $remotePlaylist . ".json";
-  $remotePlaylistModified = filemtime($remotePlaylistFile);
-  if ($remotePlaylistModified > $GLOBALS['remotePlaylistModified']) {
-    updateRemotePlaylist($remotePlaylist, $apiKey, $remotePlaylistModified);
+  $lastModifyTime = filemtime($remotePlaylistFile);
+  if ($lastModifyTime > $remotePlaylistModified) {
+    updateRemotePlaylist($remotePlaylist, $apiKey, $lastModifyTime);
   }
 
   //usleep(250000);
   sleep(1);
 }
 
-function updateRemotePlaylist($remotePlaylist, $apiKey, $remotePlaylistModified) {
+
+function updateRemotePlaylist($remotePlaylist, $apiKey, $newTime) {
   $playlists = array();
   $remotePlaylistEncoded = rawurlencode($remotePlaylist);
   $url = "http://127.0.0.1/api/playlist/${remotePlaylistEncoded}";
@@ -145,7 +147,7 @@ function updateRemotePlaylist($remotePlaylist, $apiKey, $remotePlaylistModified)
   $context = stream_context_create( $options );
   $result = file_get_contents( $url, false, $context );
   if($response) {
-    $GLOBALS['remotePlaylistModified'] = $remotePlaylistModified;
+    $GLOBALS['remotePlaylistModified'] = $newTime;
     logEntry("Remote Playlist Updated Automatically");
   }else {
     logEntry("Remote Playlsit Automatic Update Failed");
