@@ -19,7 +19,6 @@ $currentlyPlayingInRemote = "";
 $nextScheduledInRemote= "";
 $requestFetchTime = "";
 $remoteSequencesCleared = false;
-$remotePlaylistModified = 0;
 
 $baseUrl = urldecode($pluginSettings['baseUrl']);
 $apiKey = urldecode($pluginSettings['apiKey']);
@@ -86,72 +85,8 @@ while(true) {
     }
   }
 
-  //check if remote playlist has changed
-  clearstatcache();
-  $remotePlaylistFile = "/home/fpp/media/playlists/" . $remotePlaylist . ".json";
-  $lastModifyTime = filemtime($remotePlaylistFile);
-  if ($lastModifyTime > $remotePlaylistModified) {
-    updateRemotePlaylist($remotePlaylist, $apiKey, $lastModifyTime);
-  }
-
   //usleep(250000);
   sleep(1);
-}
-
-
-function updateRemotePlaylist($remotePlaylist, $apiKey, $newTime) {
-  $playlists = array();
-  $remotePlaylistEncoded = rawurlencode($remotePlaylist);
-  $url = "http://127.0.0.1/api/playlist/${remotePlaylistEncoded}";
-  $options = array(
-    'http' => array(
-      'method'  => 'GET'
-      )
-  );
-  $context = stream_context_create( $options );
-  $result = file_get_contents( $url, false, $context );
-  $response = json_decode( $result, true );
-  $mainPlaylist = $response['mainPlaylist'];
-  $index = 1;
-  foreach($mainPlaylist as $item) {
-    if($item['type'] == 'both' || $item['type'] == 'sequence') {
-      //$playlist = null;
-      $playlist = new \stdClass();
-      $playlist->sequenceName = pathinfo($item['sequenceName'], PATHINFO_FILENAME);
-      $playlist->sequenceDuration = $item['duration'];
-      $playlist->playlistIndex = $index;
-      array_push($playlists, $playlist);
-    }else if($item['type'] == 'media') {
-      //$playlist = null;
-      $playlist = new \stdClass();
-      $playlist->sequenceName = pathinfo($item['mediaName'], PATHINFO_FILENAME);
-      $playlist->sequenceDuration = $item['duration'];
-      $playlist->playlistIndex = $index;
-      array_push($playlists, $playlist);
-    }
-    $index++;
-  }
-  $url = $GLOBALS['baseUrl'] . "/syncPlaylists";
-  $data = array(
-    'playlists' => $playlists
-  );
-  $options = array(
-    'http' => array(
-      'method'  => 'POST',
-      'content' => json_encode( $data ),
-      'header'=>  "Content-Type: application/json; charset=UTF-8\r\n" .
-                  "Accept: application/json\r\n" .
-                  "key: $apiKey\r\n"
-      )
-  );
-  $context = stream_context_create( $options );
-  $result = file_get_contents( $url, false, $context );
-  if($response) {
-    $GLOBALS['remotePlaylistModified'] = $newTime;
-    logEntry("Remote Playlist Updated Automatically");
-  }else {
-    logEntry("Remote Playlsit Automatic Update Failed");
-  }
 }
 
 function updateCurrentlyPlaying($currentlyPlaying, $currentlyPlayingInRemote, $apiKey) {
