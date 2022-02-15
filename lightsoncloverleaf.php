@@ -68,7 +68,7 @@ while(true) {
             $nextSequence = $nextPlaylistInQueue->Sequence;
             if($nextSequence != null) {
                 logEntry("Queuing requested sequence " . $nextSequence);
-                insertPlaylistAfterCurrent(rawurlencode($remotePlaylist . ".fseq"), "-1");
+                insertPlaylistAfterCurrent(rawurlencode($nextSequence), "-1");
                 sleep($requestFetchTime);
                 updateCurrentlyPlaying($nextSequence, $GLOBALS['currentlyPlayingInRemote'], $remoteToken);
               
@@ -202,7 +202,6 @@ function nextPlaylistInQueue($apiKey) {
   );
   $context = stream_context_create( $options );
   $result = file_get_contents( $url, false, $context );
-  logEntry(" next playlist test: " . $result);
   return json_decode( $result );
 }
 
