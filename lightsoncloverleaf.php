@@ -40,6 +40,7 @@ while(true) {
 
     echo "Restarting Remote Plugin\n";
     logEntry("Restarting Remote Plugin");
+    $baseUrl = urldecode($pluginSettings['baseUrl']);
     $apiKey = urldecode($pluginSettings['apiKey']);
     $remotePlaylist = urldecode($pluginSettings['remotePlaylist']);
     logEntry("Remote Playlist: ".$remotePlaylist);
@@ -63,18 +64,14 @@ while(true) {
         $secondsRemaining = intVal($fppStatus->seconds_remaining);
         if($secondsRemaining < $requestFetchTime) {
           logEntry($requestFetchTime . " seconds remaining, so fetching next request");
-            $nextPlaylistInQueue = nextPlaylistInQueue($remoteToken);
-            $nextSequence = $nextPlaylistInQueue->nextPlaylist;
-            $nextSequenceIndex = $nextPlaylistInQueue->playlistIndex;
+            $nextPlaylistInQueue = nextPlaylistInQueue($apiKey);
+            $nextSequence = $nextPlaylistInQueue->Sequence;
             if($nextSequence != null) {
-              if($nextSequenceIndex != 0 && $nextSequenceIndex != -1) {
-                logEntry("Queuing requested sequence " . $nextSequence . " at index " . $nextSequenceIndex);
-                insertPlaylistAfterCurrent(rawurlencode($remotePlaylist), $nextSequenceIndex);
+                logEntry("Queuing requested sequence " . $nextSequence);
+                insertPlaylistAfterCurrent(rawurlencode($remotePlaylist), "-1");
                 sleep($requestFetchTime);
                 updateCurrentlyPlaying($nextSequence, $GLOBALS['currentlyPlayingInRemote'], $remoteToken);
-              }else {
-                logEntry($nextSequence . " was not found in " . $remotePlaylist . " or has invalid index (" . $nextSequenceIndex . ")");
-              }
+              
             }else {
               logEntry("No requests");
               sleep($requestFetchTime);
@@ -90,7 +87,7 @@ while(true) {
   }
 
   //usleep(250000);
-  sleep(5);
+  sleep(1);
 }
 
 function updateCurrentlyPlaying($currentlyPlaying, $currentlyPlayingInRemote, $apiKey) {
@@ -195,12 +192,12 @@ function getPlaylistDetails($remotePlaylistEncoded) {
   return json_decode( $result );
 }
 
-function nextPlaylistInQueue($remoteToken) {
-  $url = $GLOBALS['baseUrl'] . "/nextPlaylistInQueue?updateQueue=true";
+function nextPlaylistInQueue($apiKey) {
+  $url = $GLOBALS['baseUrl'] . "/nextPlaylistInQueue";
   $options = array(
     'http' => array(
       'method'  => 'GET',
-      'header'=>  "remotetoken: $remoteToken\r\n"
+      'header'=>  "key: $apiKey\r\n"
       )
   );
   $context = stream_context_create( $options );
