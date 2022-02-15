@@ -1,3 +1,2 @@
-# fpp-plugin-Template
-Template plugin for FPP Plugin developers
-
+# fpp-lightsoncloverleaf-plugin
+FPP Plugin for Lights on Cloverleaf

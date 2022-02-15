@@ -12,18 +12,18 @@
 # help menu in this example template.
 
 $menuEntries = Array(
-	Array(
-		'text' => 'Template - Status',
-		'type' => 'status',
-		'page' => 'status.php',
-		'wrap' => 1
-	),
 #	Array(
-#		'text' => 'Template - Content Setup',
-#		'type' => 'content',
-#		'page' => 'content.php',
+#		'text' => 'Template - Status',
+#		'type' => 'status',
+#		'page' => 'status.php',
 #		'wrap' => 1
 #	),
+	Array(
+		'text' => 'Lights on Cloverleaf',
+		'type' => 'content',
+		'page' => 'content.php',
+		'wrap' => 1
+	),
 #	Array(
 #		'text' => 'Template - Output',
 #		'type' => 'output',
