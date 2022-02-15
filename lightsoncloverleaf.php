@@ -66,9 +66,10 @@ while(true) {
           logEntry($requestFetchTime . " seconds remaining, so fetching next request");
             $nextPlaylistInQueue = nextPlaylistInQueue($apiKey);
             $nextSequence = $nextPlaylistInQueue->Sequence;
+            $nextSequenceIndex = $nextPlaylistInQueue->FPPIndex;
             if($nextSequence != null) {
                 logEntry("Queuing requested sequence " . $nextSequence);
-                insertPlaylistAfterCurrent(rawurlencode($nextSequence . ".fseq"), "-1");
+                insertPlaylistAfterCurrent(rawurlencode($remotePlaylist), $nextSequenceIndex);
                 sleep($requestFetchTime);
                 updateCurrentlyPlaying($nextSequence, $GLOBALS['currentlyPlayingInRemote'], $remoteToken);
               
@@ -105,7 +106,7 @@ function updateNextScheduledSequence($fppStatus, $currentlyPlaying, $nextSchedul
   $nextScheduled = getNextSequence($mainPlaylist, $currentlyPlaying);
   if($nextScheduled != $nextScheduledInRemote && $currentPlaylist != $GLOBALS['remotePlaylist']) {
     updateNextScheduledSequenceInRemote($nextScheduled, $remoteToken);
-    logEntry("Updated next scheduled sequence to " . $currentlyPlaying);
+    logEntry("Updated next scheduled sequence to " . $nextScheduled);
     $GLOBALS['nextScheduledInRemote'] = $nextScheduled;
   }
 }
