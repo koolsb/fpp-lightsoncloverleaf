@@ -5,6 +5,7 @@
 	"description": "Remote updates for Lights on Cloverleaf",
 	"homeURL": "https://github.com/koolsb/fpp-lightsoncloverleaf",
 	"srcURL": "https://github.com/koolsb/fpp-lightsoncloverleaf.git",
+	"bugURL": "https://github.com/koolsb/fpp-lightsoncloverleaf/issues",
 	"allowUpdates": 1,
 	"versions": [
 		{
