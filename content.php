@@ -75,7 +75,7 @@ if (isset($_POST['updateBaseUrl'])) {
   echo "<script type=\"text/javascript\">$.jGrowl('Remote Token Updated',{themeState:'success'});</script>";
 }
 
-if (isset($_POST['updateAPIKey'])) { 
+if (isset($_POST['updateApiKey'])) { 
   $apiKey = trim($_POST['apiKey']);
   WriteSettingToFile("apiKey",$apiKey,$pluginName);
   if($remoteEnabled == 1) {
@@ -345,7 +345,7 @@ if (isset($_POST['stopRemoteFalcon'])) {
                 <div class="input-group">
                   <input type="text" class="form-control" name="apiKey" id="apiKey" placeholder="API Key" value=<? echo "$apiKey "; ?>>
                   <span class="input-group-btn">
-                    <button id="updateAPIKey" name="updateAPIKey" class="btn mr-md-3 hvr-underline-from-center btn-primary" type="submit">Update</button>
+                    <button id="updateApiKey" name="updateApiKey" class="btn mr-md-3 hvr-underline-from-center btn-primary" type="submit">Update</button>
                   </span>
                 </div>
               </form>
