@@ -15,10 +15,10 @@ logEntry("Starting Remote Plugin");
 $apiKey = "";
 $remotePlaylist = "";
 $interruptSchedule = "";
-$currentlyPlayingInRF = "";
-$nextScheduledInRF= "";
+$currentlyPlayingInRemote = "";
+$nextScheduledInRemote= "";
 $requestFetchTime = "";
-$rfSequencesCleared = false;
+$remoteSequencesCleared = false;
 
 $baseUrl = urldecode($pluginSettings['baseUrl']);
 $apiKey = urldecode($pluginSettings['apiKey']);
@@ -51,14 +51,14 @@ while(true) {
     $fppStatus = getFppStatus();
     $statusName = $fppStatus->status_name;
     if($statusName != "idle") {
-      $rfSequencesCleared = false;
+      $remoteSequencesCleared = false;
       $currentlyPlaying = pathinfo($fppStatus->current_sequence, PATHINFO_FILENAME);
       if($currentlyPlaying == "") {
         //Might be media only, so check for current song
         $currentlyPlaying = pathinfo($fppStatus->current_song, PATHINFO_FILENAME);
       }
-      updateCurrentlyPlaying($currentlyPlaying, $GLOBALS['currentlyPlayingInRF'], $apiKey);
-      updateNextScheduledSequence($fppStatus, $currentlyPlaying, $GLOBALS['nextScheduledInRF'], $apiKey);
+      updateCurrentlyPlaying($currentlyPlaying, $GLOBALS['currentlyPlayingInemote'], $apiKey);
+      updateNextScheduledSequence($fppStatus, $currentlyPlaying, $GLOBALS['nextScheduledInRemote'], $apiKey);
 
         $secondsRemaining = intVal($fppStatus->seconds_remaining);
         if($secondsRemaining < $requestFetchTime) {
@@ -71,7 +71,7 @@ while(true) {
                 logEntry("Queuing requested sequence " . $nextSequence . " at index " . $nextSequenceIndex);
                 insertPlaylistAfterCurrent(rawurlencode($remotePlaylist), $nextSequenceIndex);
                 sleep($requestFetchTime);
-                updateCurrentlyPlaying($nextSequence, $GLOBALS['currentlyPlayingInRF'], $remoteToken);
+                updateCurrentlyPlaying($nextSequence, $GLOBALS['currentlyPlayingInRemote'], $remoteToken);
               }else {
                 logEntry($nextSequence . " was not found in " . $remotePlaylist . " or has invalid index (" . $nextSequenceIndex . ")");
               }
@@ -81,41 +81,40 @@ while(true) {
             }
         }
     }else {
-      if($rfSequencesCleared == 0) {
-        updateCurrentlyPlaying(" ", $GLOBALS['currentlyPlayingInRF'], $apiKey);
+      if($remoteSequencesCleared == 0) {
+        updateCurrentlyPlaying(" ", $GLOBALS['currentlyPlayingInRemote'], $apiKey);
         clearNextScheduledSequence($apiKey);
-        $rfSequencesCleared = true;
+        $remoteSequencesCleared = true;
       }
     }
   }
 
   //usleep(250000);
-  //sleep(5);
-  break;
+  sleep(5);
 }
 
-function updateCurrentlyPlaying($currentlyPlaying, $currentlyPlayingInRF, $apiKey) {
-  if($currentlyPlaying != $currentlyPlayingInRF) {
+function updateCurrentlyPlaying($currentlyPlaying, $currentlyPlayingInRemote, $apiKey) {
+  if($currentlyPlaying != $currentlyPlayingInRemote) {
     updateNowPlaying($currentlyPlaying, $apiKey);
     logEntry("Updated current playing sequence to " . $currentlyPlaying);
-    $GLOBALS['currentlyPlayingInRF'] = $currentlyPlaying;
+    $GLOBALS['currentlyPlayingInRemote'] = $currentlyPlaying;
   }
 }
 
-function updateNextScheduledSequence($fppStatus, $currentlyPlaying, $nextScheduledInRF, $remoteToken) {
+function updateNextScheduledSequence($fppStatus, $currentlyPlaying, $nextScheduledInRemote, $remoteToken) {
   $currentPlaylist = $fppStatus->current_playlist->playlist;
   $playlistDetails = getPlaylistDetails(rawurlencode($currentPlaylist));
   $mainPlaylist = $playlistDetails->mainPlaylist;
   $nextScheduled = getNextSequence($mainPlaylist, $currentlyPlaying);
-  if($nextScheduled != $nextScheduledInRF && $currentPlaylist != $GLOBALS['remotePlaylist']) {
-    updateNextScheduledSequenceInRf($nextScheduled, $remoteToken);
+  if($nextScheduled != $nextScheduledInRemote && $currentPlaylist != $GLOBALS['remotePlaylist']) {
+    updateNextScheduledSequenceInRemote($nextScheduled, $remoteToken);
     logEntry("Updated next scheduled sequence to " . $currentlyPlaying);
-    $GLOBALS['nextScheduledInRF'] = $nextScheduled;
+    $GLOBALS['nextScheduledInRemote'] = $nextScheduled;
   }
 }
 
 function clearNextScheduledSequence($apiKey) {
-  updateNextScheduledSequenceInRf(" ", $apiKey);
+  updateNextScheduledSequenceInRemote(" ", $apiKey);
 }
 
 function getNextSequence($mainPlaylist, $currentlyPlaying) {
@@ -167,7 +166,7 @@ function updateNowPlaying($currentlyPlaying, $apiKey) {
   $result = file_get_contents( $url, false, $context );
 }
 
-function updateNextScheduledSequenceInRf($nextScheduled, $apiKey) {
+function updateNextScheduledSequenceInRemote($nextScheduled, $apiKey) {
   $url = $GLOBALS['baseUrl'] . "/updateNextScheduledSequence";
   $data = array(
     'sequence' => trim($nextScheduled)
