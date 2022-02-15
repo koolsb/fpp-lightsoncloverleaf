@@ -2,7 +2,6 @@
 include_once "/opt/fpp/www/common.php";
 //include_once "/home/fpp/media/plugins/remote-falcon/baseurl.php";
 $baseUrl = "https://www.lightsoncloverleaf.com/api"; //getBaseUrl();
-$rfSequencesUrl = $baseUrl . "/controlPanel/sequences";
 $pluginName = basename(dirname(__FILE__));
 $pluginConfigFile = $settings['configDirectory'] ."/plugin." .$pluginName;
     
@@ -136,9 +135,9 @@ if (isset($_POST['updateRemotePlaylist'])) {
   }
 }
 
-$remoteFalconState = "<h4 id=\"remoteFalconRunning\">Remote Falcon is currently running</h4>";
+$remoteFalconState = "<h4 id=\"remoteFalconRunning\">Remote Updates are currently running</h4>";
 if($remoteFppEnabled == 0) {
-  $remoteFalconState = "<h4 id=\"remoteFalconStopped\">Remote Falcon is currently stopped</h4>";
+  $remoteFalconState = "<h4 id=\"remoteFalconStopped\">Remote Updates are currently stopped</h4>";
 }
 
 if (isset($_POST['updateRemoteToken'])) { 
@@ -380,14 +379,14 @@ if (isset($_POST['autoRestartPluginNo'])) {
     <div class="container-fluid">
       <div class="card">
         <div class="card-body">
-          <!-- Remote Token -->
+          <!-- Token -->
           <div class="justify-content-md-center row setting-item">
             <div class="col-md-6">
 							<div class="card-title h5">
-								Remote Token <span id="restartNotice"> *</span>
+								API Key <span id="restartNotice"> *</span>
 							</div>
 							<div class="mb-2 text-muted card-subtitle h6">
-								Your Remote Token can be found on the Remote Falcon Control Panel
+								Enter the same API key as set on your server
 							</div>
 						</div>
             <div class="col-md-6">
@@ -401,14 +400,14 @@ if (isset($_POST['autoRestartPluginNo'])) {
               </form>
             </div>
           </div>
-          <!-- Remote Playlist -->
+          <!-- Requestable Playlist -->
           <div class="justify-content-md-center row setting-item">
             <div class="col-md-6">
               <div class="card-title h5">
-                Remote Playlist <span id="restartNotice"> *</span>
+                Requestable Playlist <span id="restartNotice"> *</span>
               </div>
               <div class="mb-2 text-muted card-subtitle h6">
-                This is the playlist that contains all the sequences to be controlled by your viewers
+                This is the playlist that contains all the sequences to be requested by your viewers
               </div>
             </div>
             <div class="col-md-6">
@@ -425,28 +424,25 @@ if (isset($_POST['autoRestartPluginNo'])) {
               </form>
             </div>
           </div>
-          <!-- Current Remote Playlist -->
+          <!-- Current Requestable Playlist -->
           <div class="justify-content-md-center row setting-item" style="padding-top: .5em;">
             <div class="col-md-6">
               <div class="card-title h5">
-                Current Remote Playlist
+                Current Requestable Playlist
               </div>
               <div class="mb-2 text-muted card-subtitle h6">
-                This is the current playlist synced with Remote Falcon (click to go to Sequences in your Control Panel)
+                This is the current playlist synced with the web server.
               </div>
-            </div>
-            <div class="col-md-6">
-              <h5><a href=<? echo "$rfSequencesUrl"; ?> target="_blank" rel="noopener noreferrer"><? echo "$remotePlaylist"; ?></a></h5>
             </div>
           </div>
           <!-- Request Fetch Time -->
           <div class="justify-content-md-center row setting-item">
             <div class="col-md-6">
 							<div class="card-title h5">
-								Request/Vote Fetch Time <span id="restartNotice"> *</span>
+								Request Fetch Time <span id="restartNotice"> *</span>
 							</div>
 							<div class="mb-2 text-muted card-subtitle h6">
-								This sets when the plugin checks for the next request/vote (default is 10 seconds)
+								This sets when the plugin checks for the next request (default is 10 seconds)
 							</div>
 						</div>
             <div class="col-md-3">
@@ -460,27 +456,6 @@ if (isset($_POST['autoRestartPluginNo'])) {
               </form>
             </div>
             <div class="col-md-3">
-            </div>
-          </div>
-          <!-- Interrupt Schedule -->
-          <div class="justify-content-md-center row setting-item">
-            <div class="col-md-6">
-              <div class="card-title h5">
-                Interrupt Schedule <span id="restartNotice"> *</span>
-              </div>
-              <div class="mb-2 text-muted card-subtitle h6">
-                Determines if a request or vote will interrupt the normal schedule
-              </div>
-            </div>
-            <div class="col-md-6">
-              <form method="post">
-                <button class="btn mr-md-3 hvr-underline-from-center <? echo $interruptYes; ?>" id="interruptScheduleYes" name="interruptScheduleYes" type="submit">
-                  Yes
-                </button>
-                <button class="btn mr-md-3 hvr-underline-from-center <? echo $interruptNo; ?>" id="interruptScheduleNo" name="interruptScheduleNo" type="submit">
-                  No
-                </button>
-              </form>
             </div>
           </div>
           <!-- Auto Restart Plugin -->
@@ -508,16 +483,16 @@ if (isset($_POST['autoRestartPluginNo'])) {
           <div class="justify-content-md-center row setting-item">
             <div class="col-md-6">
               <div class="card-title h5">
-                Restart Remote Falcon
+                Restart Plugin
               </div>
               <div class="mb-2 text-muted card-subtitle h6">
-                This will restart the Remote Falcon plugin
+                This will restart the plugin
               </div>
             </div>
             <div class="col-md-6">
               <form method="post">
                 <button class="btn mr-md-3 hvr-underline-from-center btn-primary" id="restartRemoteFalcon" name="restartRemoteFalcon" type="submit">
-                  Restart Remote Falcon
+                  Restart Plugin
                 </button>
               </form>
             </div>
@@ -526,22 +501,22 @@ if (isset($_POST['autoRestartPluginNo'])) {
           <div class="justify-content-md-center row setting-item">
             <div class="col-md-6">
               <div class="card-title h5">
-                Stop Remote Falcon
+                Stop Plugin 
               </div>
               <div class="mb-2 text-muted card-subtitle h6">
-                <span id="warning">WARNING! </span>This will immediately stop the Remote Falcon
+                <span id="warning">WARNING! </span>This will immediately stop the
                 plugin and no requests/votes will be fetched!
               </div>
             </div>
             <div class="col-md-6">
             <form method="post">
                 <button class="btn mr-md-3 hvr-underline-from-center btn-danger" id="stopRemoteFalcon" name="stopRemoteFalcon" type="submit">
-                  Stop Remote Falcon
+                  Stop Plugin
                 </button>
               </form>
             </div>
           </div>
-          <span id="restartNotice">* Requires Remote Falcon Restart</span>
+          <span id="restartNotice">* Requires Plugin Restart</span>
         </div>
       </div>
     </div>
