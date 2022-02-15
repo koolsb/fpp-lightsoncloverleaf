@@ -1,7 +1,7 @@
 <?php
 include_once "/opt/fpp/www/common.php";
-include_once "/home/fpp/media/plugins/remote-falcon/baseurl.php";
-$baseUrl = getBaseUrl();
+//include_once "/home/fpp/media/plugins/remote-falcon/baseurl.php";
+$baseUrl = "https://www.lightsoncloverleaf.com/api"; //getBaseUrl();
 $rfSequencesUrl = $baseUrl . "/controlPanel/sequences";
 $pluginName = basename(dirname(__FILE__));
 $pluginConfigFile = $settings['configDirectory'] ."/plugin." .$pluginName;
