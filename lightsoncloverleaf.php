@@ -137,7 +137,7 @@ function getFppStatus() {
 }
 
 function updateNowPlaying($currentlyPlaying, $apiKey) {
-  $url = $GLOBALS['baseUrl'] . "/updateNowPlaying";
+  $url = $GLOBALS['baseUrl'] . "/nowPlaying";
   $data = array(
     'sequence' => trim($currentlyPlaying)
   );
@@ -155,7 +155,7 @@ function updateNowPlaying($currentlyPlaying, $apiKey) {
 }
 
 function updateNextScheduledSequenceInRemote($nextScheduled, $apiKey) {
-  $url = $GLOBALS['baseUrl'] . "/updateNextScheduledSequence";
+  $url = $GLOBALS['baseUrl'] . "/playingNext";
   $data = array(
     'sequence' => trim($nextScheduled)
   );
