@@ -54,7 +54,11 @@ if(is_dir($playlistDirectory)) {
         continue;
       }
       $fileRead = pathinfo($fileRead, PATHINFO_FILENAME);
-      $playlistOptions .= "<option value=\"{$fileRead}\">{$fileRead}</option>";
+      if ($fileread == $remotePlaylist) {
+        $playlistOptions .= "<option selected value=\"{$fileRead}\">{$fileRead}</option>";
+      } else {
+        $playlistOptions .= "<option value=\"{$fileRead}\">{$fileRead}</option>";
+      }
     }
     closedir($dirTemp);
   }
