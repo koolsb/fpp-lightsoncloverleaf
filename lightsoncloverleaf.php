@@ -57,7 +57,7 @@ while(true) {
         //Might be media only, so check for current song
         $currentlyPlaying = pathinfo($fppStatus->current_song, PATHINFO_FILENAME);
       }
-      updateCurrentlyPlaying($currentlyPlaying, $GLOBALS['currentlyPlayingInemote'], $apiKey);
+      updateCurrentlyPlaying($currentlyPlaying, $GLOBALS['currentlyPlayingInRemote'], $apiKey);
       updateNextScheduledSequence($fppStatus, $currentlyPlaying, $GLOBALS['nextScheduledInRemote'], $apiKey);
 
         $secondsRemaining = intVal($fppStatus->seconds_remaining);
@@ -131,18 +131,6 @@ function getNextSequence($mainPlaylist, $currentlyPlaying) {
   return pathinfo($nextScheduled, PATHINFO_FILENAME);
 }
 
-function holdForImmediatePlay() {
-  sleep(5);
-  $fppStatus = getFppStatus();
-  $secondsRemaining = intVal($fppStatus->seconds_remaining);
-  logEntry("Sitting tight for " . $secondsRemaining . " seconds");
-  while($secondsRemaining > 1) {
-    $fppStatus = getFppStatus();
-    $secondsRemaining = intVal($fppStatus->seconds_remaining);
-    usleep(250000);
-  }
-}
-
 function getFppStatus() {
   $result=file_get_contents("http://127.0.0.1/api/fppd/status");
   return json_decode( $result );
@@ -184,30 +172,8 @@ function updateNextScheduledSequenceInRemote($nextScheduled, $apiKey) {
   $result = file_get_contents( $url, false, $context );
 }
 
-function insertPlaylistImmediate($remotePlaylistEncoded, $index) { 
-  $url = "http://127.0.0.1/api/command/Insert%20Playlist%20Immediate/" . $remotePlaylistEncoded . "/" . $index . "/" . $index;
-  $options = array(
-    'http' => array(
-      'method'  => 'GET'
-      )
-  );
-  $context = stream_context_create( $options );
-  $result = file_get_contents( $url, false, $context );
-}
-
 function insertPlaylistAfterCurrent($remotePlaylistEncoded, $index) {
   $url = "http://127.0.0.1/api/command/Insert%20Playlist%20After%20Current/" . $remotePlaylistEncoded . "/" . $index . "/" . $index;
-  $options = array(
-    'http' => array(
-      'method'  => 'GET'
-      )
-  );
-  $context = stream_context_create( $options );
-  $result = file_get_contents( $url, false, $context );
-}
-
-function stopGracefully() {
-  $url = "http://127.0.0.1/api/playlists/stopgracefully";
   $options = array(
     'http' => array(
       'method'  => 'GET'
@@ -222,19 +188,6 @@ function getPlaylistDetails($remotePlaylistEncoded) {
   $options = array(
     'http' => array(
       'method'  => 'GET'
-      )
-  );
-  $context = stream_context_create( $options );
-  $result = file_get_contents( $url, false, $context );
-  return json_decode( $result );
-}
-
-function highestVotedSequence($remoteToken) {
-  $url = $GLOBALS['baseUrl'] . "/highestVotedPlaylist";
-  $options = array(
-    'http' => array(
-      'method'  => 'GET',
-      'header'=>  "remotetoken: $remoteToken\r\n"
       )
   );
   $context = stream_context_create( $options );
