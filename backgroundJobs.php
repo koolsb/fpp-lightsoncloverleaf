@@ -27,6 +27,7 @@ while(true) {
     $baseUrl = urldecode($pluginSettings['baseUrl']);
     $apiKey = urldecode($pluginSettings['apiKey']);
     $remotePlaylist = urldecode($pluginSettings['remotePlaylist']);
+    $remotePlaylistModified = 0;
   }
 
   if ($remoteEnabled == 1) {
@@ -38,9 +39,13 @@ while(true) {
     if ($lastModifyTime > $remotePlaylistModified) {
       updateRemotePlaylist($remotePlaylist, $apiKey, $lastModifyTime);
     }
+
+    //check if sequences have been added/removed
+
+
   }
 
-  sleep(5);
+  sleep(3600);
 
 }
 
