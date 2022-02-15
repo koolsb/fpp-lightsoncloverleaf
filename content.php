@@ -12,8 +12,8 @@ if (file_exists($pluginConfigFile)) {
 if (strlen(urldecode($pluginSettings['remotePlaylist']))<1){
   WriteSettingToFile("remotePlaylist",urlencode(""),$pluginName);
 }
-if (strlen(urldecode($pluginSettings['remoteToken']))<1){
-  WriteSettingToFile("remoteToken",urlencode(""),$pluginName);
+if (strlen(urldecode($pluginSettings['apiKey']))<1){
+  WriteSettingToFile("apiKey",urlencode(""),$pluginName);
 }
 if (strlen(urldecode($pluginSettings['requestFetchTime']))<1){
   WriteSettingToFile("requestFetchTime",urlencode("10"),$pluginName);
@@ -64,7 +64,7 @@ $playlists = "";
 if (isset($_POST['updateRemotePlaylist'])) {
   $remotePlaylist = trim($_POST['remotePlaylist']);
   if (strlen($remotePlaylist)>=2){
-    if(strlen($remoteToken)>1) {
+    if(strlen($apiKey)>1) {
       $playlists = array();
       $remotePlaylistEncoded = rawurlencode($remotePlaylist);
       $url = "http://127.0.0.1/api/playlist/${remotePlaylistEncoded}";
@@ -104,7 +104,7 @@ if (isset($_POST['updateRemotePlaylist'])) {
           'content' => json_encode( $data ),
           'header'=>  "Content-Type: application/json; charset=UTF-8\r\n" .
                       "Accept: application/json\r\n" .
-                      "remotetoken: $remoteToken\r\n"
+                      "remotetoken: $apiKey\r\n"
           )
       );
       $context = stream_context_create( $options );
@@ -365,7 +365,7 @@ if (isset($_POST['autoRestartPluginNo'])) {
             <div class="col-md-6">
               <form method="post">
                 <div class="input-group">
-                  <input type="text" class="form-control" name="apiKey" id="apiKey" placeholder="API Key" value=<? echo "$remoteToken "; ?>>
+                  <input type="text" class="form-control" name="apiKey" id="apiKey" placeholder="API Key" value=<? echo "$apiKey "; ?>>
                   <span class="input-group-btn">
                     <button id="updateAPIKey" name="updateAPIKey" class="btn mr-md-3 hvr-underline-from-center btn-primary" type="submit">Update</button>
                   </span>
