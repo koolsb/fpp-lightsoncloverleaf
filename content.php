@@ -107,14 +107,14 @@ if (isset($_POST['updateRemotePlaylist'])) {
         foreach($mainPlaylist as $item) {
           if($item['type'] == 'both' || $item['type'] == 'sequence') {
             $playlist = null;
-            $playlist->playlistName = pathinfo($item['sequenceName'], PATHINFO_FILENAME);
-            $playlist->playlistDuration = $item['duration'];
+            $playlist->sequenceName = pathinfo($item['sequenceName'], PATHINFO_FILENAME);
+            $playlist->sequenceDuration = $item['duration'];
             $playlist->playlistIndex = $index;
             array_push($playlists, $playlist);
           }else if($item['type'] == 'media') {
             $playlist = null;
-            $playlist->playlistName = pathinfo($item['mediaName'], PATHINFO_FILENAME);
-            $playlist->playlistDuration = $item['duration'];
+            $playlist->sequenceName = pathinfo($item['mediaName'], PATHINFO_FILENAME);
+            $playlist->sequenceDuration = $item['duration'];
             $playlist->playlistIndex = $index;
             array_push($playlists, $playlist);
           }
