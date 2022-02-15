@@ -275,10 +275,10 @@ if (isset($_POST['stopRemote'])) {
       font-weight: bold;
       color: #A72525;
     }
-		#restartNotice {
+    #restartNotice {
 			font-weight: bold;
       color: #D65A31;
-      <? echo $restartNotice; ?>
+      visibility: hidden;
 		}
   </style>
 </head>
@@ -288,7 +288,7 @@ if (isset($_POST['stopRemote'])) {
       <div class="card">
         <div class="card-body"><div class="justify-content-md-center row" style="padding-bottom: 1em;">
           <div class="col-md-auto">
-            <h1>Lights on Cloverleaf<? echo $pluginVersion; ?></h1>
+            <h1>Lights on Cloverleaf</h1>
           </div>
         </div>
         <div class="justify-content-md-center row" style="padding-bottom: 1em;">
