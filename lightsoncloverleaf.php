@@ -30,9 +30,9 @@ logEntry("Request Fetch Time: " . $requestFetchTime);
 while(true) {
   $pluginSettings = parse_ini_file($pluginConfigFile);
   $remoteEnabled = urldecode($pluginSettings['remote_enabled']);
-  $remoteEnabled = $remoteFppEnabled == "true" ? true : false;
+  $remoteEnabled = $remoteEnabled == "true" ? true : false;
   $remoteRestarting = urldecode($pluginSettings['remote_fpp_restarting']);
-  $remoteRestarting = $remoteFppRestarting == "true" ? true : false;
+  $remoteRestarting = $remoteRestarting == "true" ? true : false;
 
   if($remoteRestarting == 1) {
     WriteSettingToFile("remote_enabled",urlencode("true"),$pluginName);
