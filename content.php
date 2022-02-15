@@ -1,7 +1,6 @@
 <?php
 include_once "/opt/fpp/www/common.php";
-//include_once "/home/fpp/media/plugins/remote-falcon/baseurl.php";
-$baseUrl = "https://www.lightsoncloverleaf.com/api"; //getBaseUrl();
+$baseUrl = "https://www.lightsoncloverleaf.com/api";
 $pluginName = basename(dirname(__FILE__));
 $pluginConfigFile = $settings['configDirectory'] ."/plugin." .$pluginName;
     
@@ -13,17 +12,11 @@ if (file_exists($pluginConfigFile)) {
 if (strlen(urldecode($pluginSettings['remotePlaylist']))<1){
   WriteSettingToFile("remotePlaylist",urlencode(""),$pluginName);
 }
-if (strlen(urldecode($pluginSettings['interrupt_schedule_enabled']))<1){
-  WriteSettingToFile("interrupt_schedule_enabled",urlencode("false"),$pluginName);
-}
 if (strlen(urldecode($pluginSettings['remoteToken']))<1){
   WriteSettingToFile("remoteToken",urlencode(""),$pluginName);
 }
 if (strlen(urldecode($pluginSettings['requestFetchTime']))<1){
   WriteSettingToFile("requestFetchTime",urlencode("10"),$pluginName);
-}
-if (strlen(urldecode($pluginSettings['autoRestartPlugin']))<1){
-  WriteSettingToFile("autoRestartPlugin",urlencode("false"),$pluginName);
 }
 
 foreach ($pluginSettings as $key => $value) { 
@@ -140,9 +133,9 @@ if($remoteFppEnabled == 0) {
   $remoteFalconState = "<h4 id=\"remoteFalconStopped\">Remote Updates are currently stopped</h4>";
 }
 
-if (isset($_POST['updateRemoteToken'])) { 
-  $remoteToken = trim($_POST['remoteToken']);
-  WriteSettingToFile("remoteToken",$remoteToken,$pluginName);
+if (isset($_POST['updateAPIKey'])) { 
+  $apiKey = trim($_POST['apiKey']);
+  WriteSettingToFile("apiKey",$apiKey,$pluginName);
   if($autoRestartPlugin == 1 && $remoteFppEnabled == 1) {
     WriteSettingToFile("remote_fpp_enabled",urlencode("false"),$pluginName);
     WriteSettingToFile("remote_fpp_restarting",urlencode("true"),$pluginName);
@@ -169,26 +162,6 @@ if($interruptSchedule == 1) {
 }else {
   $interruptYes = "btn-secondary";
   $interruptNo = "btn-primary";
-}
-if (isset($_POST['interruptScheduleYes'])) {
-  $interruptYes = "btn-primary";
-  $interruptNo = "btn-secondary";
-  WriteSettingToFile("interrupt_schedule_enabled",urlencode("true"),$pluginName);
-  if($autoRestartPlugin == 1 && $remoteFppEnabled == 1) {
-    WriteSettingToFile("remote_fpp_enabled",urlencode("false"),$pluginName);
-    WriteSettingToFile("remote_fpp_restarting",urlencode("true"),$pluginName);
-  }
-  echo "<script type=\"text/javascript\">$.jGrowl('Interrupt Schedule On',{themeState:'success'});</script>";
-}
-if (isset($_POST['interruptScheduleNo'])) {
-  $interruptYes = "btn-secondary";
-  $interruptNo = "btn-primary";
-  WriteSettingToFile("interrupt_schedule_enabled",urlencode("false"),$pluginName);
-  if($autoRestartPlugin == 1 && $remoteFppEnabled == 1) {
-    WriteSettingToFile("remote_fpp_enabled",urlencode("false"),$pluginName);
-    WriteSettingToFile("remote_fpp_restarting",urlencode("true"),$pluginName);
-  }
-  echo "<script type=\"text/javascript\">$.jGrowl('Interrupt Schedule Off',{themeState:'success'});</script>";
 }
 
 if (isset($_POST['restartRemoteFalcon'])) {
@@ -392,9 +365,9 @@ if (isset($_POST['autoRestartPluginNo'])) {
             <div class="col-md-6">
               <form method="post">
                 <div class="input-group">
-                  <input type="text" class="form-control" name="remoteToken" id="remoteToken" placeholder="Remote Token" value=<? echo "$remoteToken "; ?>>
+                  <input type="text" class="form-control" name="apiKey" id="apiKey" placeholder="API Key" value=<? echo "$remoteToken "; ?>>
                   <span class="input-group-btn">
-                    <button id="updateRemoteToken" name="updateRemoteToken" class="btn mr-md-3 hvr-underline-from-center btn-primary" type="submit">Update</button>
+                    <button id="updateAPIKey" name="updateAPIKey" class="btn mr-md-3 hvr-underline-from-center btn-primary" type="submit">Update</button>
                   </span>
                 </div>
               </form>
@@ -434,6 +407,9 @@ if (isset($_POST['autoRestartPluginNo'])) {
                 This is the current playlist synced with the web server.
               </div>
             </div>
+            <div class="col-md-6">
+              <h5><? echo "$remotePlaylist"; ?></h5>
+            </div>
           </div>
           <!-- Request Fetch Time -->
           <div class="justify-content-md-center row setting-item">
@@ -456,27 +432,6 @@ if (isset($_POST['autoRestartPluginNo'])) {
               </form>
             </div>
             <div class="col-md-3">
-            </div>
-          </div>
-          <!-- Auto Restart Plugin -->
-          <div class="justify-content-md-center row setting-item">
-            <div class="col-md-6">
-              <div class="card-title h5">
-                Auto Restart Remote Falcon
-              </div>
-              <div class="mb-2 text-muted card-subtitle h6">
-                Turning this on will automatically restart Remote Falcon when a plugin change is made
-              </div>
-            </div>
-            <div class="col-md-6">
-              <form method="post">
-                <button class="btn mr-md-3 hvr-underline-from-center <? echo $autoRestartPluginYes; ?>" id="autoRestartPluginYes" name="autoRestartPluginYes" type="submit">
-                  Yes
-                </button>
-                <button class="btn mr-md-3 hvr-underline-from-center <? echo $autoRestartPluginNo; ?>" id="autoRestartPluginNo" name="autoRestartPluginNo" type="submit">
-                  No
-                </button>
-              </form>
             </div>
           </div>
           <!-- Restart Remote Falcon -->
