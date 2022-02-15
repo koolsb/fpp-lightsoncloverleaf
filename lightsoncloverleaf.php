@@ -68,7 +68,7 @@ while(true) {
             $nextSequence = $nextPlaylistInQueue->Sequence;
             if($nextSequence != null) {
                 logEntry("Queuing requested sequence " . $nextSequence);
-                insertPlaylistAfterCurrent(rawurlencode($nextSequence), "-1");
+                insertPlaylistAfterCurrent(rawurlencode($nextSequence . ".fseq"), "-1");
                 sleep($requestFetchTime);
                 updateCurrentlyPlaying($nextSequence, $GLOBALS['currentlyPlayingInRemote'], $remoteToken);
               
