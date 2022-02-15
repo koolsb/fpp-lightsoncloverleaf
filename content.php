@@ -10,8 +10,6 @@ if (file_exists($pluginConfigFile)) {
   $pluginSettings = parse_ini_file($pluginConfigFile);
 }
 
-$pluginVersion = "6.2.2";
-
 //set defaults if nothing saved
 if (strlen(urldecode($pluginSettings['remotePlaylist']))<1){
   WriteSettingToFile("remotePlaylist",urlencode(""),$pluginName);
@@ -28,7 +26,6 @@ if (strlen(urldecode($pluginSettings['requestFetchTime']))<1){
 if (strlen(urldecode($pluginSettings['autoRestartPlugin']))<1){
   WriteSettingToFile("autoRestartPlugin",urlencode("false"),$pluginName);
 }
-WriteSettingToFile("pluginVersion",urlencode($pluginVersion),$pluginName);
 
 foreach ($pluginSettings as $key => $value) { 
   ${$key} = urldecode($value);
@@ -39,7 +36,7 @@ $remoteFppEnabled = $remoteFppEnabled == "true" ? true : false;
 $autoRestartPlugin = urldecode($pluginSettings['autoRestartPlugin']);
 $autoRestartPlugin = $autoRestartPlugin == "true" ? true : false;
 
-$url = "http://127.0.0.1/api/plugin/remote-falcon/updates";
+$url = "http://127.0.0.1/api/plugin/fpp-lightsoncloverleaf/updates";
 $options = array(
   'http' => array(
     'method'  => 'POST',
@@ -255,7 +252,7 @@ if (isset($_POST['autoRestartPluginNo'])) {
       font-weight: 400;
       line-height: 1.5;
       padding-bottom: 2em;
-      background-image: url("https://remotefalcon.com/brick-wall-background-with-juke.jpg");
+      /*background-image: url("https://remotefalcon.com/brick-wall-background-with-juke.jpg");*/
       background-repeat: no-repeat;
       background-attachment: fixed;
       background-position: top center;
@@ -363,14 +360,7 @@ if (isset($_POST['autoRestartPluginNo'])) {
       <div class="card">
         <div class="card-body"><div class="justify-content-md-center row" style="padding-bottom: 1em;">
           <div class="col-md-auto">
-            <h1>Remote Falcon Plugin v<? echo $pluginVersion; ?></h1>
-          </div>
-        </div>
-        <div class="justify-content-md-center row" style="padding-bottom: 1em;">
-          <div class="col-md-auto">
-            <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=FFKWA2CFP6JC6&currency_code=USD&source=url" target="_blank" rel="noopener noreferrer">
-              <img style="margin-left: 1em;" alt="RF_Donate" src="https://remotefalcon.com/support-button-v2.png">
-            </a>
+            <h1>Lights on Cloverleaf<? echo $pluginVersion; ?></h1>
           </div>
         </div>
         <div class="justify-content-md-center row" style="padding-bottom: 1em;">
@@ -383,11 +373,6 @@ if (isset($_POST['autoRestartPluginNo'])) {
             <div class="col-md-auto">
               <h4 style="font-weight: bold;">An update is available!</h4>
             </div>
-          </div>
-        </div>
-        <div class="justify-content-md-center row">
-          <div class="col-md-auto">
-            <h4 id="env"><? echo $baseUrl == "https://remotefalcon.me" ? "TEST" : "" ?></h4>
           </div>
         </div>
       </div>
