@@ -60,17 +60,17 @@ if(is_dir($playlistDirectory)) {
   }
 }
 
-$remoteFalconState = "<h4 id=\"remoteFalconRunning\">Remote Updates are currently running</h4>";
+$remoteState = "<h4 id=\"remoteRunning\">Remote Updates are currently running</h4>";
 if($remoteEnabled == 0) {
-  $remoteFalconState = "<h4 id=\"remoteFalconStopped\">Remote Updates are currently stopped</h4>";
+  $remoteState = "<h4 id=\"remoteStopped\">Remote Updates are currently stopped</h4>";
 }
 
 if (isset($_POST['updateBaseUrl'])) { 
   $baseUrl = trim($_POST['baseUrl']);
   WriteSettingToFile("baseUrl",$baseUrl,$pluginName);
   if($remoteEnabled == 1) {
-    WriteSettingToFile("remote_fpp_enabled",urlencode("false"),$pluginName);
-    WriteSettingToFile("remote_fpp_restarting",urlencode("true"),$pluginName);
+    WriteSettingToFile("remote_enabled",urlencode("false"),$pluginName);
+    WriteSettingToFile("remote_restarting",urlencode("true"),$pluginName);
   }
   echo "<script type=\"text/javascript\">$.jGrowl('Remote Token Updated',{themeState:'success'});</script>";
 }
@@ -79,8 +79,8 @@ if (isset($_POST['updateApiKey'])) {
   $apiKey = trim($_POST['apiKey']);
   WriteSettingToFile("apiKey",$apiKey,$pluginName);
   if($remoteEnabled == 1) {
-    WriteSettingToFile("remote_fpp_enabled",urlencode("false"),$pluginName);
-    WriteSettingToFile("remote_fpp_restarting",urlencode("true"),$pluginName);
+    WriteSettingToFile("remote_enabled",urlencode("false"),$pluginName);
+    WriteSettingToFile("remote_restarting",urlencode("true"),$pluginName);
   }
   echo "<script type=\"text/javascript\">$.jGrowl('Remote Token Updated',{themeState:'success'});</script>";
 }
@@ -139,8 +139,8 @@ if (isset($_POST['updateRemotePlaylist'])) {
         if($response) {
           WriteSettingToFile("remotePlaylist",$remotePlaylist,$pluginName);
           if($remoteEnabled == 1) {
-            WriteSettingToFile("remote_fpp_enabled",urlencode("false"),$pluginName);
-            WriteSettingToFile("remote_fpp_restarting",urlencode("true"),$pluginName);
+            WriteSettingToFile("remote_enabled",urlencode("false"),$pluginName);
+            WriteSettingToFile("remote_fp_restarting",urlencode("true"),$pluginName);
           }
           echo "<script type=\"text/javascript\">$.jGrowl('Remote Playlist Updated!',{themeState:'success'});</script>";
         }else {
@@ -161,20 +161,20 @@ if (isset($_POST['updateRequestFetchTime'])) {
   $requestFetchTime = trim($_POST['requestFetchTime']);
   WriteSettingToFile("requestFetchTime",$requestFetchTime,$pluginName);
   if($remoteFppEnabled == 1) {
-    WriteSettingToFile("remote_fpp_enabled",urlencode("false"),$pluginName);
-    WriteSettingToFile("remote_fpp_restarting",urlencode("true"),$pluginName);
+    WriteSettingToFile("remote_enabled",urlencode("false"),$pluginName);
+    WriteSettingToFile("remote_restarting",urlencode("true"),$pluginName);
   }
   echo "<script type=\"text/javascript\">$.jGrowl('Request Fetch Time Updated',{themeState:'success'});</script>";
 }
 
-if (isset($_POST['restartRemoteFalcon'])) {
-  $remoteFalconState = "<h4 id=\"remoteFalconRunning\">Remote Falcon is currently running</h4>";
-  WriteSettingToFile("remote_fpp_enabled",urlencode("false"),$pluginName);
-  WriteSettingToFile("remote_fpp_restarting",urlencode("true"),$pluginName);
+if (isset($_POST['restartRemote'])) {
+  $remoteState = "<h4 id=\"remoteRunning\">Remote is currently running</h4>";
+  WriteSettingToFile("remote_enabled",urlencode("false"),$pluginName);
+  WriteSettingToFile("remote_restarting",urlencode("true"),$pluginName);
 }
-if (isset($_POST['stopRemoteFalcon'])) {
-  $remoteFalconState = "<h4 id=\"remoteFalconStopped\">Remote Falcon is currently stopped</h4>";
-  WriteSettingToFile("remote_fpp_enabled",urlencode("false"),$pluginName);
+if (isset($_POST['stopRemote'])) {
+  $remoteState = "<h4 id=\"remoteStopped\">Remote is currently stopped</h4>";
+  WriteSettingToFile("remote_enabled",urlencode("false"),$pluginName);
 }
 
 ?>
@@ -204,7 +204,6 @@ if (isset($_POST['stopRemoteFalcon'])) {
       font-weight: 400;
       line-height: 1.5;
       padding-bottom: 2em;
-      /*background-image: url("https://remotefalcon.com/brick-wall-background-with-juke.jpg");*/
       background-repeat: no-repeat;
       background-attachment: fixed;
       background-position: top center;
@@ -258,10 +257,10 @@ if (isset($_POST['stopRemoteFalcon'])) {
       left: 0;
       right: 0;
     }
-		#remoteFalconRunning {
+		#remoteRunning {
 			color: #60F779;
 		}
-		#remoteFalconStopped {
+		#remoteStopped {
 			color: #A72525;
 		}
 		#update {
@@ -294,7 +293,7 @@ if (isset($_POST['stopRemoteFalcon'])) {
         </div>
         <div class="justify-content-md-center row" style="padding-bottom: 1em;">
           <div class="col-md-auto">
-            <? echo $remoteFalconState; ?>
+            <? echo $remoteState; ?>
           </div>
         </div>
         <div style=<? echo "$showUpdateDiv"; ?>>
@@ -412,7 +411,7 @@ if (isset($_POST['stopRemoteFalcon'])) {
             <div class="col-md-3">
             </div>
           </div>
-          <!-- Restart Remote Falcon -->
+          <!-- Restart Remote -->
           <div class="justify-content-md-center row setting-item">
             <div class="col-md-6">
               <div class="card-title h5">
@@ -424,13 +423,13 @@ if (isset($_POST['stopRemoteFalcon'])) {
             </div>
             <div class="col-md-6">
               <form method="post">
-                <button class="btn mr-md-3 hvr-underline-from-center btn-primary" id="restartRemoteFalcon" name="restartRemoteFalcon" type="submit">
+                <button class="btn mr-md-3 hvr-underline-from-center btn-primary" id="restartRemote" name="restartRemote" type="submit">
                   Restart Plugin
                 </button>
               </form>
             </div>
           </div>
-          <!-- Stop Remote Falcon -->
+          <!-- Stop Remote -->
           <div class="justify-content-md-center row setting-item">
             <div class="col-md-6">
               <div class="card-title h5">
@@ -443,7 +442,7 @@ if (isset($_POST['stopRemoteFalcon'])) {
             </div>
             <div class="col-md-6">
             <form method="post">
-                <button class="btn mr-md-3 hvr-underline-from-center btn-danger" id="stopRemoteFalcon" name="stopRemoteFalcon" type="submit">
+                <button class="btn mr-md-3 hvr-underline-from-center btn-danger" id="stopRemote" name="stopRemote" type="submit">
                   Stop Plugin
                 </button>
               </form>

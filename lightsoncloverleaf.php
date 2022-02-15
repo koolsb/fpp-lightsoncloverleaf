@@ -1,6 +1,5 @@
 <?php
 include_once "/opt/fpp/www/common.php";
-include_once "/home/fpp/media/plugins/remote-falcon/baseurl.php";
 $baseUrl = getBaseUrl();
 $pluginName = basename(dirname(__FILE__));
 $pluginPath = $settings['pluginDirectory']."/".$pluginName."/"; 
@@ -8,61 +7,47 @@ $logFile = $settings['logDirectory']."/".$pluginName.".log";
 $pluginConfigFile = $settings['configDirectory'] . "/plugin." .$pluginName;
 $pluginSettings = parse_ini_file($pluginConfigFile);
 
-WriteSettingToFile("remote_fpp_enabled",urlencode("true"),$pluginName);
-WriteSettingToFile("remote_fpp_restarting",urlencode("false"),$pluginName);
+WriteSettingToFile("remote_enabled",urlencode("true"),$pluginName);
+WriteSettingToFile("remote_restarting",urlencode("false"),$pluginName);
 
-$pluginVersion = urldecode($pluginSettings['pluginVersion']);
-echo "Starting Remote Falcon Plugin v" . $pluginVersion . "\n";
-logEntry("Starting Remote Falcon Plugin v" . $pluginVersion);
+echo "Starting Remote Plugin\n";
+logEntry("Starting Remote Plugin");
 
-$remoteToken = "";
+$apiKey = "";
 $remotePlaylist = "";
-$viewerControlMode = "";
 $interruptSchedule = "";
 $currentlyPlayingInRF = "";
 $nextScheduledInRF= "";
 $requestFetchTime = "";
 $rfSequencesCleared = false;
 
-$remoteToken = urldecode($pluginSettings['remoteToken']);
+$apiKey = urldecode($pluginSettings['apiKey']);
 $remotePlaylist = urldecode($pluginSettings['remotePlaylist']);
 logEntry("Remote Playlist: ".$remotePlaylist);
-$remotePreferences = remotePreferences($remoteToken);
-$viewerControlMode = $remotePreferences->viewerControlMode;
-logEntry("Viewer Control Mode: " . $viewerControlMode);
-$interruptSchedule = urldecode($pluginSettings['interrupt_schedule_enabled']);
-logEntry("Interrupt Schedule: " . $interruptSchedule);
-$interruptSchedule = $interruptSchedule == "true" ? true : false;
 $requestFetchTime = intVal(urldecode($pluginSettings['requestFetchTime']));
 logEntry("Request Fetch Time: " . $requestFetchTime);
 
 while(true) {
   $pluginSettings = parse_ini_file($pluginConfigFile);
-  $remoteFppEnabled = urldecode($pluginSettings['remote_fpp_enabled']);
-  $remoteFppEnabled = $remoteFppEnabled == "true" ? true : false;
-  $remoteFppRestarting = urldecode($pluginSettings['remote_fpp_restarting']);
-  $remoteFppRestarting = $remoteFppRestarting == "true" ? true : false;
+  $remoteEnabled = urldecode($pluginSettings['remote_enabled']);
+  $remoteEnabled = $remoteFppEnabled == "true" ? true : false;
+  $remoteRestarting = urldecode($pluginSettings['remote_fpp_restarting']);
+  $remoteRestarting = $remoteFppRestarting == "true" ? true : false;
 
-  if($remoteFppRestarting == 1) {
-    WriteSettingToFile("remote_fpp_enabled",urlencode("true"),$pluginName);
-    WriteSettingToFile("remote_fpp_restarting",urlencode("false"),$pluginName);
+  if($remoteRestarting == 1) {
+    WriteSettingToFile("remote_enabled",urlencode("true"),$pluginName);
+    WriteSettingToFile("remote_restarting",urlencode("false"),$pluginName);
 
-    echo "Restarting Remote Falcon Plugin v" . $pluginVersion . "\n";
-    logEntry("Restarting Remote Falcon Plugin v" . $pluginVersion);
-    $remoteToken = urldecode($pluginSettings['remoteToken']);
+    echo "Restarting Remote Plugin\n";
+    logEntry("Restarting Remote Plugin");
+    $apiKey = urldecode($pluginSettings['apiKey']);
     $remotePlaylist = urldecode($pluginSettings['remotePlaylist']);
     logEntry("Remote Playlist: ".$remotePlaylist);
-    $remotePreferences = remotePreferences($remoteToken);
-    $viewerControlMode = $remotePreferences->viewerControlMode;
-    logEntry("Viewer Control Mode: " . $viewerControlMode);
-    $interruptSchedule = urldecode($pluginSettings['interrupt_schedule_enabled']);
-    logEntry("Interrupt Schedule: " . $interruptSchedule);
-    $interruptSchedule = $interruptSchedule == "true" ? true : false;
     $requestFetchTime = intVal(urldecode($pluginSettings['requestFetchTime']));
     logEntry("Request Fetch Time: " . $requestFetchTime);
   }
 
-  if($remoteFppEnabled == 1) {
+  if($remoteEnabled == 1) {
     $fppStatus = getFppStatus();
     $statusName = $fppStatus->status_name;
     if($statusName != "idle") {
@@ -72,32 +57,12 @@ while(true) {
         //Might be media only, so check for current song
         $currentlyPlaying = pathinfo($fppStatus->current_song, PATHINFO_FILENAME);
       }
-      updateCurrentlyPlaying($currentlyPlaying, $GLOBALS['currentlyPlayingInRF'], $remoteToken);
-      updateNextScheduledSequence($fppStatus, $currentlyPlaying, $GLOBALS['nextScheduledInRF'], $remoteToken);
+      updateCurrentlyPlaying($currentlyPlaying, $GLOBALS['currentlyPlayingInRF'], $apiKey);
+      updateNextScheduledSequence($fppStatus, $currentlyPlaying, $GLOBALS['nextScheduledInRF'], $apiKey);
 
-      //Do not interrupt schedule
-      if($interruptSchedule != 1) {
         $secondsRemaining = intVal($fppStatus->seconds_remaining);
         if($secondsRemaining < $requestFetchTime) {
           logEntry($requestFetchTime . " seconds remaining, so fetching next request");
-          if($viewerControlMode == "voting") {
-            $highestVotedSequence = highestVotedSequence($remoteToken);
-            $winningSequence = $highestVotedSequence->winningPlaylist;
-            $winningSequenceIndex = $highestVotedSequence->playlistIndex;
-            if($winningSequence != null) {
-              if($winningSequenceIndex != 0 && $winningSequenceIndex != -1) {
-                logEntry("Queuing winning sequence " . $winningSequence . " at index " . $winningSequenceIndex);
-                insertPlaylistAfterCurrent(rawurlencode($remotePlaylist), $winningSequenceIndex);
-                sleep($requestFetchTime);
-                updateCurrentlyPlaying($winningSequence, $GLOBALS['currentlyPlayingInRF'], $remoteToken);
-              }else {
-                logEntry($winningSequence . " was not found in " . $remotePlaylist . " or has invalid index (" . $winningSequenceIndex . ")");
-              }
-            }else {
-              logEntry("No votes");
-              sleep($requestFetchTime);
-            }
-          }else {
             $nextPlaylistInQueue = nextPlaylistInQueue($remoteToken);
             $nextSequence = $nextPlaylistInQueue->nextPlaylist;
             $nextSequenceIndex = $nextPlaylistInQueue->playlistIndex;
@@ -114,59 +79,24 @@ while(true) {
               logEntry("No requests");
               sleep($requestFetchTime);
             }
-          }
         }
-      //Do interrupt schedule
-      }else {
-        if($viewerControlMode == "voting") {
-          $highestVotedSequence = highestVotedSequence($remoteToken);
-          $winningSequence = $highestVotedSequence->winningPlaylist;
-          $winningSequenceIndex = $highestVotedSequence->playlistIndex;
-          if($winningSequence != null) {
-            if($winningSequenceIndex != 0 && $winningSequenceIndex != -1) {
-              insertPlaylistImmediate(rawurlencode($remotePlaylist), $winningSequenceIndex);
-              logEntry("Playing winning sequence " . $winningSequence . " at index " . $winningSequenceIndex);
-              updateCurrentlyPlaying($winningSequence, $GLOBALS['currentlyPlayingInRF'], $remoteToken);
-              holdForImmediatePlay();
-            }else {
-              logEntry($winningSequence . " was not found in " . $remotePlaylist . " or has invalid index (" . $winningSequenceIndex . ")");
-            }
-          }else {
-            sleep(5);
-          }
-        }else {
-          $nextPlaylistInQueue = nextPlaylistInQueue($remoteToken);
-          $nextSequence = $nextPlaylistInQueue->nextPlaylist;
-          $nextSequenceIndex = $nextPlaylistInQueue->playlistIndex;
-          if($nextSequence != null) {
-            if($nextSequenceIndex != 0 && $nextSequenceIndex != -1) {
-              insertPlaylistImmediate(rawurlencode($remotePlaylist), $nextSequenceIndex);
-              logEntry("Playing requested sequence " . $nextSequence . " at index " . $nextSequenceIndex);
-              updateCurrentlyPlaying($nextSequence, $GLOBALS['currentlyPlayingInRF'], $remoteToken);
-              holdForImmediatePlay();
-            }else {
-              logEntry($nextSequence . " was not found in " . $remotePlaylist . " or has invalid index (" . $nextSequenceIndex . ")");
-            }
-          }else {
-            sleep(5);
-          }
-        }
-      }
     }else {
       if($rfSequencesCleared == 0) {
-        updateCurrentlyPlaying(" ", $GLOBALS['currentlyPlayingInRF'], $remoteToken);
-        clearNextScheduledSequence($remoteToken);
+        updateCurrentlyPlaying(" ", $GLOBALS['currentlyPlayingInRF'], $apiKey);
+        clearNextScheduledSequence($apiKey);
         $rfSequencesCleared = true;
       }
     }
   }
 
-  usleep(250000);
+  //usleep(250000);
+  //sleep(5);
+  break;
 }
 
-function updateCurrentlyPlaying($currentlyPlaying, $currentlyPlayingInRF, $remoteToken) {
+function updateCurrentlyPlaying($currentlyPlaying, $currentlyPlayingInRF, $apiKey) {
   if($currentlyPlaying != $currentlyPlayingInRF) {
-    updateWhatsPlaying($currentlyPlaying, $remoteToken);
+    updateNowPlaying($currentlyPlaying, $apiKey);
     logEntry("Updated current playing sequence to " . $currentlyPlaying);
     $GLOBALS['currentlyPlayingInRF'] = $currentlyPlaying;
   }
@@ -214,26 +144,13 @@ function holdForImmediatePlay() {
   }
 }
 
-function remotePreferences($remoteToken) {
-  $url = $GLOBALS['baseUrl'] . "/remotePreferences";
-  $options = array(
-    'http' => array(
-      'method'  => 'GET',
-      'header'=>  "remotetoken: $remoteToken\r\n"
-      )
-  );
-  $context = stream_context_create( $options );
-  $result = file_get_contents( $url, false, $context );
-  return json_decode( $result );
-}
-
 function getFppStatus() {
   $result=file_get_contents("http://127.0.0.1/api/fppd/status");
   return json_decode( $result );
 }
 
-function updateWhatsPlaying($currentlyPlaying, $remoteToken) {
-  $url = $GLOBALS['baseUrl'] . "/updateWhatsPlaying";
+function updateNowPlaying($currentlyPlaying, $apiKey) {
+  $url = $GLOBALS['baseUrl'] . "/updateNowPlaying";
   $data = array(
     'playlist' => trim($currentlyPlaying)
   );
@@ -243,7 +160,7 @@ function updateWhatsPlaying($currentlyPlaying, $remoteToken) {
       'content' => json_encode( $data ),
       'header'=>  "Content-Type: application/json; charset=UTF-8\r\n" .
                   "Accept: application/json\r\n" .
-                  "remotetoken: $remoteToken\r\n"
+                  "remotetoken: $apiKey\r\n"
       )
   );
   $context = stream_context_create( $options );
