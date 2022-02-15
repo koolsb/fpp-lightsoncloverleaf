@@ -89,64 +89,68 @@ $playlists = "";
 if (isset($_POST['updateRemotePlaylist'])) {
   $remotePlaylist = trim($_POST['remotePlaylist']);
   if (strlen($remotePlaylist)>=2){
-    if(strlen($apiKey)>1 & strlen($baseUrl)>1) {
-      $playlists = array();
-      $remotePlaylistEncoded = rawurlencode($remotePlaylist);
-      $url = "http://127.0.0.1/api/playlist/${remotePlaylistEncoded}";
-      $options = array(
-        'http' => array(
-          'method'  => 'GET'
-          )
-      );
-      $context = stream_context_create( $options );
-      $result = file_get_contents( $url, false, $context );
-      $response = json_decode( $result, true );
-      $mainPlaylist = $response['mainPlaylist'];
-      $index = 1;
-      foreach($mainPlaylist as $item) {
-        if($item['type'] == 'both' || $item['type'] == 'sequence') {
-          $playlist = null;
-          $playlist->playlistName = pathinfo($item['sequenceName'], PATHINFO_FILENAME);
-          $playlist->playlistDuration = $item['duration'];
-          $playlist->playlistIndex = $index;
-          array_push($playlists, $playlist);
-        }else if($item['type'] == 'media') {
-          $playlist = null;
-          $playlist->playlistName = pathinfo($item['mediaName'], PATHINFO_FILENAME);
-          $playlist->playlistDuration = $item['duration'];
-          $playlist->playlistIndex = $index;
-          array_push($playlists, $playlist);
+    if(strlen($baseUrl)>1) {
+      if(strlen($apiKey)>1) {
+        $playlists = array();
+        $remotePlaylistEncoded = rawurlencode($remotePlaylist);
+        $url = "http://127.0.0.1/api/playlist/${remotePlaylistEncoded}";
+        $options = array(
+          'http' => array(
+            'method'  => 'GET'
+            )
+        );
+        $context = stream_context_create( $options );
+        $result = file_get_contents( $url, false, $context );
+        $response = json_decode( $result, true );
+        $mainPlaylist = $response['mainPlaylist'];
+        $index = 1;
+        foreach($mainPlaylist as $item) {
+          if($item['type'] == 'both' || $item['type'] == 'sequence') {
+            $playlist = null;
+            $playlist->playlistName = pathinfo($item['sequenceName'], PATHINFO_FILENAME);
+            $playlist->playlistDuration = $item['duration'];
+            $playlist->playlistIndex = $index;
+            array_push($playlists, $playlist);
+          }else if($item['type'] == 'media') {
+            $playlist = null;
+            $playlist->playlistName = pathinfo($item['mediaName'], PATHINFO_FILENAME);
+            $playlist->playlistDuration = $item['duration'];
+            $playlist->playlistIndex = $index;
+            array_push($playlists, $playlist);
+          }
+          $index++;
         }
-        $index++;
-      }
-      $url = $baseUrl . "/syncPlaylists";
-      $data = array(
-        'playlists' => $playlists
-      );
-      $options = array(
-        'http' => array(
-          'method'  => 'POST',
-          'content' => json_encode( $data ),
-          'header'=>  "Content-Type: application/json; charset=UTF-8\r\n" .
-                      "Accept: application/json\r\n" .
-                      "key: $apiKey\r\n"
-          )
-      );
-      $context = stream_context_create( $options );
-      $result = file_get_contents( $url, false, $context );
-      $response = json_decode( $result );
-      if($response) {
-        WriteSettingToFile("remotePlaylist",$remotePlaylist,$pluginName);
-        if($remoteEnabled == 1) {
-          WriteSettingToFile("remote_fpp_enabled",urlencode("false"),$pluginName);
-          WriteSettingToFile("remote_fpp_restarting",urlencode("true"),$pluginName);
+        $url = $baseUrl . "/syncPlaylists";
+        $data = array(
+          'playlists' => $playlists
+        );
+        $options = array(
+          'http' => array(
+            'method'  => 'POST',
+            'content' => json_encode( $data ),
+            'header'=>  "Content-Type: application/json; charset=UTF-8\r\n" .
+                        "Accept: application/json\r\n" .
+                        "key: $apiKey\r\n"
+            )
+        );
+        $context = stream_context_create( $options );
+        $result = file_get_contents( $url, false, $context );
+        $response = json_decode( $result );
+        if($response) {
+          WriteSettingToFile("remotePlaylist",$remotePlaylist,$pluginName);
+          if($remoteEnabled == 1) {
+            WriteSettingToFile("remote_fpp_enabled",urlencode("false"),$pluginName);
+            WriteSettingToFile("remote_fpp_restarting",urlencode("true"),$pluginName);
+          }
+          echo "<script type=\"text/javascript\">$.jGrowl('Remote Playlist Updated!',{themeState:'success'});</script>";
+        }else {
+          echo "<script type=\"text/javascript\">$.jGrowl('Remote Playlist Update Failed!',{themeState:'danger'});</script>";
         }
-        echo "<script type=\"text/javascript\">$.jGrowl('Remote Playlist Updated!',{themeState:'success'});</script>";
       }else {
-        echo "<script type=\"text/javascript\">$.jGrowl('Remote Playlist Update Failed!',{themeState:'danger'});</script>";
+        echo "<script type=\"text/javascript\">$.jGrowl('Remote Token Not Found!',{themeState:'danger'});</script>";
       }
     }else {
-      echo "<script type=\"text/javascript\">$.jGrowl('Remote Token Not Found!',{themeState:'danger'});</script>";
+      echo "<script type=\"text/javascript\">$.jGrowl('Base URL Not Found!',{themeState:'danger'});</script>";
     }
   }else {
     echo "<script type=\"text/javascript\">$.jGrowl('No Playlist was Selected!',{themeState:'danger'});</script>";
