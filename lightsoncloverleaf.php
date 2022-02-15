@@ -31,7 +31,7 @@ while(true) {
   $pluginSettings = parse_ini_file($pluginConfigFile);
   $remoteEnabled = urldecode($pluginSettings['remote_enabled']);
   $remoteEnabled = $remoteEnabled == "true" ? true : false;
-  $remoteRestarting = urldecode($pluginSettings['remote_fpp_restarting']);
+  $remoteRestarting = urldecode($pluginSettings['remote_restarting']);
   $remoteRestarting = $remoteRestarting == "true" ? true : false;
 
   if($remoteRestarting == 1) {
@@ -114,8 +114,8 @@ function updateNextScheduledSequence($fppStatus, $currentlyPlaying, $nextSchedul
   }
 }
 
-function clearNextScheduledSequence($remoteToken) {
-  updateNextScheduledSequenceInRf(" ", $remoteToken);
+function clearNextScheduledSequence($apiKey) {
+  updateNextScheduledSequenceInRf(" ", $apiKey);
 }
 
 function getNextSequence($mainPlaylist, $currentlyPlaying) {
@@ -160,14 +160,14 @@ function updateNowPlaying($currentlyPlaying, $apiKey) {
       'content' => json_encode( $data ),
       'header'=>  "Content-Type: application/json; charset=UTF-8\r\n" .
                   "Accept: application/json\r\n" .
-                  "remotetoken: $apiKey\r\n"
+                  "key: $apiKey\r\n"
       )
   );
   $context = stream_context_create( $options );
   $result = file_get_contents( $url, false, $context );
 }
 
-function updateNextScheduledSequenceInRf($nextScheduled, $remoteToken) {
+function updateNextScheduledSequenceInRf($nextScheduled, $apiKey) {
   $url = $GLOBALS['baseUrl'] . "/updateNextScheduledSequence";
   $data = array(
     'sequence' => trim($nextScheduled)
@@ -178,7 +178,7 @@ function updateNextScheduledSequenceInRf($nextScheduled, $remoteToken) {
       'content' => json_encode( $data ),
       'header'=>  "Content-Type: application/json; charset=UTF-8\r\n" .
                   "Accept: application/json\r\n" .
-                  "remotetoken: $remoteToken\r\n"
+                  "key: $apiKey\r\n"
       )
   );
   $context = stream_context_create( $options );
