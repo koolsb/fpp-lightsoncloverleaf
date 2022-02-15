@@ -202,6 +202,7 @@ function nextPlaylistInQueue($apiKey) {
   );
   $context = stream_context_create( $options );
   $result = file_get_contents( $url, false, $context );
+  logEntry(" next playlist test: " . $result);
   return json_decode( $result );
 }
 
