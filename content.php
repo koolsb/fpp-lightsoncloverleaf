@@ -380,20 +380,6 @@ if(is_dir($playlistDirectory)) {
               </form>
             </div>
           </div>
-          <!-- Current Requestable Playlist -->
-          <div class="justify-content-md-center row setting-item" style="padding-top: .5em;">
-            <div class="col-md-6">
-              <div class="card-title h5">
-                Current Requestable Playlist
-              </div>
-              <div class="mb-2 text-muted card-subtitle h6">
-                This is the current playlist synced with the web server.
-              </div>
-            </div>
-            <div class="col-md-6">
-              <h5><? echo "$remotePlaylist"; ?></h5>
-            </div>
-          </div>
           <!-- Request Fetch Time -->
           <div class="justify-content-md-center row setting-item">
             <div class="col-md-6">

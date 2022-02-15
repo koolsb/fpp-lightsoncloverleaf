@@ -48,38 +48,36 @@ while(true) {
     logEntry("Request Fetch Time: " . $requestFetchTime);
   }
 
-  if($remoteEnabled == 1) {
+  if ($remoteEnabled == 1) {
     $fppStatus = getFppStatus();
     $statusName = $fppStatus->status_name;
-    if($statusName != "idle") {
+    if ($statusName != "idle") {
       $remoteSequencesCleared = false;
       $currentlyPlaying = pathinfo($fppStatus->current_sequence, PATHINFO_FILENAME);
-      if($currentlyPlaying == "") {
+      if ($currentlyPlaying == "") {
         //Might be media only, so check for current song
         $currentlyPlaying = pathinfo($fppStatus->current_song, PATHINFO_FILENAME);
       }
       updateCurrentlyPlaying($currentlyPlaying, $GLOBALS['currentlyPlayingInRemote'], $apiKey);
       updateNextScheduledSequence($fppStatus, $currentlyPlaying, $GLOBALS['nextScheduledInRemote'], $apiKey);
-
         $secondsRemaining = intVal($fppStatus->seconds_remaining);
-        if($secondsRemaining < $requestFetchTime) {
-          logEntry($requestFetchTime . " seconds remaining, so fetching next request");
-            $nextPlaylistInQueue = nextPlaylistInQueue($apiKey);
-            $nextSequence = $nextPlaylistInQueue->Sequence;
-            $nextSequenceIndex = $nextPlaylistInQueue->FPPIndex;
-            if($nextSequence != null) {
-                logEntry("Queuing requested sequence " . $nextSequence);
-                insertPlaylistAfterCurrent(rawurlencode($remotePlaylist), $nextSequenceIndex);
-                sleep($requestFetchTime);
-                updateCurrentlyPlaying($nextSequence, $GLOBALS['currentlyPlayingInRemote'], $remoteToken);
-              
-            }else {
-              logEntry("No requests");
+      if ($secondsRemaining < $requestFetchTime) {
+        logEntry($requestFetchTime . " seconds remaining, so fetching next request");
+          $nextPlaylistInQueue = nextPlaylistInQueue($apiKey);
+          $nextSequence = $nextPlaylistInQueue->Sequence;
+          $nextSequenceIndex = $nextPlaylistInQueue->FPPIndex;
+          if ($nextSequence != null) {
+              logEntry("Queuing requested sequence " . $nextSequence);
+              insertPlaylistAfterCurrent(rawurlencode($remotePlaylist), $nextSequenceIndex);
               sleep($requestFetchTime);
-            }
-        }
-    }else {
-      if($remoteSequencesCleared == 0) {
+              updateCurrentlyPlaying($nextSequence, $GLOBALS['currentlyPlayingInRemote'], $remoteToken);
+          } else {
+            logEntry("No requests");
+            sleep($requestFetchTime);
+          }
+      }
+    } else {
+      if ($remoteSequencesCleared == 0) {
         updateCurrentlyPlaying(" ", $GLOBALS['currentlyPlayingInRemote'], $apiKey);
         clearNextScheduledSequence($apiKey);
         $remoteSequencesCleared = true;
@@ -87,8 +85,71 @@ while(true) {
     }
   }
 
+  //check if remote playlist has changed
+  clearstatcache();
+  $remotePlaylistFile = "/home/fpp/media/playlists/" . $remotePlaylist . ".json";
+  $remotePlaylistModified = filemtime($remotePlaylistFile);
+  if ($remotePlaylistModified > $GLOBALS['remotePlaylistModified']) {
+    updateRemotePlaylist($remotePlaylist, $apiKey, $remotePlaylistModified);
+  }
+
   //usleep(250000);
   sleep(1);
+}
+
+function updateRemotePlaylist($remotePlaylist, $apiKey, $remotePlaylistModified) {
+  $playlists = array();
+  $remotePlaylistEncoded = rawurlencode($remotePlaylist);
+  $url = "http://127.0.0.1/api/playlist/${remotePlaylistEncoded}";
+  $options = array(
+    'http' => array(
+      'method'  => 'GET'
+      )
+  );
+  $context = stream_context_create( $options );
+  $result = file_get_contents( $url, false, $context );
+  $response = json_decode( $result, true );
+  $mainPlaylist = $response['mainPlaylist'];
+  $index = 1;
+  foreach($mainPlaylist as $item) {
+    if($item['type'] == 'both' || $item['type'] == 'sequence') {
+      //$playlist = null;
+      $playlist = new \stdClass();
+      $playlist->sequenceName = pathinfo($item['sequenceName'], PATHINFO_FILENAME);
+      $playlist->sequenceDuration = $item['duration'];
+      $playlist->playlistIndex = $index;
+      array_push($playlists, $playlist);
+    }else if($item['type'] == 'media') {
+      //$playlist = null;
+      $playlist = new \stdClass();
+      $playlist->sequenceName = pathinfo($item['mediaName'], PATHINFO_FILENAME);
+      $playlist->sequenceDuration = $item['duration'];
+      $playlist->playlistIndex = $index;
+      array_push($playlists, $playlist);
+    }
+    $index++;
+  }
+  $url = $GLOBALS['baseUrl'] . "/syncPlaylists";
+  $data = array(
+    'playlists' => $playlists
+  );
+  $options = array(
+    'http' => array(
+      'method'  => 'POST',
+      'content' => json_encode( $data ),
+      'header'=>  "Content-Type: application/json; charset=UTF-8\r\n" .
+                  "Accept: application/json\r\n" .
+                  "key: $apiKey\r\n"
+      )
+  );
+  $context = stream_context_create( $options );
+  $result = file_get_contents( $url, false, $context );
+  if($response) {
+    $GLOBALS['remotePlaylistModified'] = $remotePlaylistModified;
+    logEntry("Remote Playlist Updated Automatically");
+  }else {
+    logEntry("Remote Playlsit Automatic Update Failed");
+  }
 }
 
 function updateCurrentlyPlaying($currentlyPlaying, $currentlyPlayingInRemote, $apiKey) {
