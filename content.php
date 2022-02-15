@@ -1,6 +1,5 @@
 <?php
 include_once "/opt/fpp/www/common.php";
-$baseUrl = "https://www.lightsoncloverleaf.com/api";
 $pluginName = basename(dirname(__FILE__));
 $pluginConfigFile = $settings['configDirectory'] ."/plugin." .$pluginName;
     
@@ -131,6 +130,16 @@ if (isset($_POST['updateRemotePlaylist'])) {
 $remoteFalconState = "<h4 id=\"remoteFalconRunning\">Remote Updates are currently running</h4>";
 if($remoteFppEnabled == 0) {
   $remoteFalconState = "<h4 id=\"remoteFalconStopped\">Remote Updates are currently stopped</h4>";
+}
+
+if (isset($_POST['updateBaseUrl'])) { 
+  $baseUrl = trim($_POST['baseUrl']);
+  WriteSettingToFile("baseUrl",$baseUrl,$pluginName);
+  if($autoRestartPlugin == 1 && $remoteFppEnabled == 1) {
+    WriteSettingToFile("remote_fpp_enabled",urlencode("false"),$pluginName);
+    WriteSettingToFile("remote_fpp_restarting",urlencode("true"),$pluginName);
+  }
+  echo "<script type=\"text/javascript\">$.jGrowl('Remote Token Updated',{themeState:'success'});</script>";
 }
 
 if (isset($_POST['updateAPIKey'])) { 
@@ -352,6 +361,27 @@ if (isset($_POST['autoRestartPluginNo'])) {
     <div class="container-fluid">
       <div class="card">
         <div class="card-body">
+          <!-- Base URL -->
+          <div class="justify-content-md-center row setting-item">
+            <div class="col-md-6">
+							<div class="card-title h5">
+								Base URL <span id="restartNotice"> *</span>
+							</div>
+							<div class="mb-2 text-muted card-subtitle h6">
+								Enter the base URL of your server
+							</div>
+						</div>
+            <div class="col-md-6">
+              <form method="post">
+                <div class="input-group">
+                  <input type="text" class="form-control" name="baseUrl" id="baseUrl" placeholder="Base URL" value=<? echo "$baseUrl "; ?>>
+                  <span class="input-group-btn">
+                    <button id="updateBaseUrl" name="updateBaseUrl" class="btn mr-md-3 hvr-underline-from-center btn-primary" type="submit">Update</button>
+                  </span>
+                </div>
+              </form>
+            </div>
+          </div>
           <!-- Token -->
           <div class="justify-content-md-center row setting-item">
             <div class="col-md-6">
