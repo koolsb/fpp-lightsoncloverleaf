@@ -45,25 +45,6 @@ if ($response['updatesAvailable'] == 1) {
   $showUpdateDiv = "display:none";
 }
 
-$playlistDirectory= $settings['playlistDirectory'];
-$playlistOptions = "";
-if(is_dir($playlistDirectory)) {
-  if ($dirTemp = opendir($playlistDirectory)){
-    while (($fileRead = readdir($dirTemp)) !== false) {
-      if (($fileRead == ".") || ($fileRead == "..")){
-        continue;
-      }
-      $fileRead = pathinfo($fileRead, PATHINFO_FILENAME);
-      if ($fileRead == $remotePlaylist) {
-        $playlistOptions .= "<option selected value=\"{$fileRead}\">{$fileRead}</option>";
-      } else {
-        $playlistOptions .= "<option value=\"{$fileRead}\">{$fileRead}</option>";
-      }
-    }
-    closedir($dirTemp);
-  }
-}
-
 $remoteState = "<h4 id=\"remoteRunning\">Remote Updates are currently running</h4>";
 if($remoteEnabled == 0) {
   $remoteState = "<h4 id=\"remoteStopped\">Remote Updates are currently stopped</h4>";
@@ -181,6 +162,25 @@ if (isset($_POST['restartRemote'])) {
 if (isset($_POST['stopRemote'])) {
   $remoteState = "<h4 id=\"remoteStopped\">Remote is currently stopped</h4>";
   WriteSettingToFile("remote_enabled",urlencode("false"),$pluginName);
+}
+
+$playlistDirectory= $settings['playlistDirectory'];
+$playlistOptions = "";
+if(is_dir($playlistDirectory)) {
+  if ($dirTemp = opendir($playlistDirectory)){
+    while (($fileRead = readdir($dirTemp)) !== false) {
+      if (($fileRead == ".") || ($fileRead == "..")){
+        continue;
+      }
+      $fileRead = pathinfo($fileRead, PATHINFO_FILENAME);
+      if ($fileRead == $remotePlaylist) {
+        $playlistOptions .= "<option selected value=\"{$fileRead}\">{$fileRead}</option>";
+      } else {
+        $playlistOptions .= "<option value=\"{$fileRead}\">{$fileRead}</option>";
+      }
+    }
+    closedir($dirTemp);
+  }
 }
 
 ?>
