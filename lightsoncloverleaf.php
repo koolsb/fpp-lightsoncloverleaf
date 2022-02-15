@@ -1,6 +1,5 @@
 <?php
 include_once "/opt/fpp/www/common.php";
-$baseUrl = getBaseUrl();
 $pluginName = basename(dirname(__FILE__));
 $pluginPath = $settings['pluginDirectory']."/".$pluginName."/"; 
 $logFile = $settings['logDirectory']."/".$pluginName.".log";
@@ -21,6 +20,7 @@ $nextScheduledInRF= "";
 $requestFetchTime = "";
 $rfSequencesCleared = false;
 
+$baseUrl = urldecode($pluginSettings['baseUrl']);
 $apiKey = urldecode($pluginSettings['apiKey']);
 $remotePlaylist = urldecode($pluginSettings['remotePlaylist']);
 logEntry("Remote Playlist: ".$remotePlaylist);
