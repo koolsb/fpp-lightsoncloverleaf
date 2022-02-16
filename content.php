@@ -113,7 +113,7 @@ if (isset($_POST['updateRemotePlaylist'])) {
           WriteSettingToFile("remotePlaylist",$remotePlaylist,$pluginName);
           if($remoteEnabled == 1) {
             WriteSettingToFile("remote_enabled",urlencode("false"),$pluginName);
-            WriteSettingToFile("remote_fp_restarting",urlencode("true"),$pluginName);
+            WriteSettingToFile("remote_restarting",urlencode("true"),$pluginName);
           }
           echo "<script type=\"text/javascript\">$.jGrowl('Remote Playlist Updated!',{themeState:'success'});</script>";
         }else {
