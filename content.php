@@ -11,6 +11,9 @@ if (file_exists($pluginConfigFile)) {
 if (strlen(urldecode($pluginSettings['remotePlaylist']))<1){
   WriteSettingToFile("remotePlaylist",urlencode(""),$pluginName);
 }
+if (strlen(urldecode($pluginSettings['hiddenPlaylist']))<1){
+  WriteSettingToFile("hiddenPlaylist",urlencode(""),$pluginName);
+}
 if (strlen(urldecode($pluginSettings['baseUrl']))<1){
   WriteSettingToFile("baseUrl",urlencode(""),$pluginName);
 }
@@ -107,7 +110,7 @@ if (isset($_POST['updateRemotePlaylist'])) {
           }
           $index++;
         }
-        $url = $baseUrl . "/syncPlaylists";
+        $url = $baseUrl . "/syncRequestable";
         $data = array(
           'playlists' => $playlists
         );
@@ -144,6 +147,76 @@ if (isset($_POST['updateRemotePlaylist'])) {
   }
 }
 
+$playlists = "";
+if (isset($_POST['updateHiddenPlaylist'])) {
+  $hiddenPlaylist = trim($_POST['hiddenPlaylist']);
+  if (strlen($hiddenPlaylist)>=2){
+    if(strlen($baseUrl)>1) {
+      if(strlen($apiKey)>1) {
+        $playlists = array();
+        $hiddenPlaylistEncoded = rawurlencode($hiddenPlaylist);
+        $url = "http://127.0.0.1/api/playlist/${hiddenPlaylistEncoded}";
+        $options = array(
+          'http' => array(
+            'method'  => 'GET'
+            )
+        );
+        $context = stream_context_create( $options );
+        $result = file_get_contents( $url, false, $context );
+        $response = json_decode( $result, true );
+        $mainPlaylist = $response['mainPlaylist'];
+        $index = 1;
+        foreach($mainPlaylist as $item) {
+          if($item['type'] == 'both' || $item['type'] == 'sequence') {
+            //$playlist = null;
+            $playlist = new \stdClass();
+            $playlist->sequenceName = pathinfo($item['sequenceName'], PATHINFO_FILENAME);
+            $playlist->sequenceDuration = $item['duration'];
+            $playlist->playlistIndex = $index;
+            array_push($playlists, $playlist);
+          }else if($item['type'] == 'media') {
+            //$playlist = null;
+            $playlist = new \stdClass();
+            $playlist->sequenceName = pathinfo($item['mediaName'], PATHINFO_FILENAME);
+            $playlist->sequenceDuration = $item['duration'];
+            $playlist->playlistIndex = $index;
+            array_push($playlists, $playlist);
+          }
+          $index++;
+        }
+        $url = $baseUrl . "/syncHidden";
+        $data = array(
+          'playlists' => $playlists
+        );
+        $options = array(
+          'http' => array(
+            'method'  => 'POST',
+            'content' => json_encode( $data ),
+            'header'=>  "Content-Type: application/json; charset=UTF-8\r\n" .
+                        "Accept: application/json\r\n" .
+                        "key: $apiKey\r\n"
+            )
+        );
+        $context = stream_context_create( $options );
+        $result = file_get_contents( $url, false, $context );
+        $response = json_decode( $result );
+        if($response) {
+          WriteSettingToFile("hiddenPlaylist",$hiddenPlaylist,$pluginName);
+          echo "<script type=\"text/javascript\">$.jGrowl('Hidden Playlist Updated!',{themeState:'success'});</script>";
+        }else {
+          echo "<script type=\"text/javascript\">$.jGrowl('Hidden Playlist Update Failed!',{themeState:'danger'});</script>";
+        }
+      }else {
+        echo "<script type=\"text/javascript\">$.jGrowl('Remote Token Not Found!',{themeState:'danger'});</script>";
+      }
+    }else {
+      echo "<script type=\"text/javascript\">$.jGrowl('Base URL Not Found!',{themeState:'danger'});</script>";
+    }
+  }else {
+    echo "<script type=\"text/javascript\">$.jGrowl('No Playlist was Selected!',{themeState:'danger'});</script>";
+  }
+}
+
 if (isset($_POST['updateRequestFetchTime'])) { 
   $requestFetchTime = trim($_POST['requestFetchTime']);
   WriteSettingToFile("requestFetchTime",$requestFetchTime,$pluginName);
@@ -165,7 +238,8 @@ if (isset($_POST['stopRemote'])) {
 }
 
 $playlistDirectory= $settings['playlistDirectory'];
-$playlistOptions = "";
+$remotePlaylistOptions = "";
+$hiddenPlaylistOptions = "";
 if(is_dir($playlistDirectory)) {
   if ($dirTemp = opendir($playlistDirectory)){
     while (($fileRead = readdir($dirTemp)) !== false) {
@@ -174,9 +248,12 @@ if(is_dir($playlistDirectory)) {
       }
       $fileRead = pathinfo($fileRead, PATHINFO_FILENAME);
       if ($fileRead == $remotePlaylist) {
-        $playlistOptions .= "<option selected value=\"{$fileRead}\">{$fileRead}</option>";
+        $remotePlaylistOptions .= "<option selected value=\"{$fileRead}\">{$fileRead}</option>";
+      } elseif ($fileRead == $hiddenPlaylist) {
+        $hiddenPlaylistOptions .= "<option selected value=\"{$fileRead}\">{$fileRead}</option>";
       } else {
-        $playlistOptions .= "<option value=\"{$fileRead}\">{$fileRead}</option>";
+        $remotePlaylistOptions .= "<option value=\"{$fileRead}\">{$fileRead}</option>";
+        $hiddenPlaylistOptions .= "<option value=\"{$fileRead}\">{$fileRead}</option>";
       }
     }
     closedir($dirTemp);
@@ -371,10 +448,34 @@ if(is_dir($playlistDirectory)) {
                 <div class="input-group">
                   <select class="form-select" id="remotePlaylist" name="remotePlaylist">
                     <option selected value=""></option>
-                    <? echo "$playlistOptions "; ?>
+                    <? echo "$remotePlaylistOptions "; ?>
                   </select>
                   <span class="input-group-btn">
                     <button id="updateRemotePlaylist" name="updateRemotePlaylist" class="btn mr-md-3 hvr-underline-from-center btn-primary" type="submit">Update</button>
+                  </span>
+                </div>
+              </form>
+            </div>
+          </div>
+          <!-- Hidden Playlist -->
+          <div class="justify-content-md-center row setting-item">
+            <div class="col-md-6">
+              <div class="card-title h5">
+                Hidden Playlist
+              </div>
+              <div class="mb-2 text-muted card-subtitle h6">
+                This is the playlist that contains all the sequences to be hidden from the website
+              </div>
+            </div>
+            <div class="col-md-6">
+              <form method="post">
+                <div class="input-group">
+                  <select class="form-select" id="hiddenPlaylist" name="hiddenPlaylist">
+                    <option selected value=""></option>
+                    <? echo "$hiddenPlaylistOptions "; ?>
+                  </select>
+                  <span class="input-group-btn">
+                    <button id="updateHiddenPlaylist" name="updateHiddenPlaylist" class="btn mr-md-3 hvr-underline-from-center btn-primary" type="submit">Update</button>
                   </span>
                 </div>
               </form>
