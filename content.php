@@ -31,23 +31,6 @@ foreach ($pluginSettings as $key => $value) {
 $remoteEnabled = urldecode($pluginSettings['remote_enabled']);
 $remoteEnabled = $remoteEnabled == "true" ? true : false;
 
-$url = "http://127.0.0.1/api/plugin/fpp-lightsoncloverleaf/updates";
-$options = array(
-  'http' => array(
-    'method'  => 'POST',
-    'header'=>  "Content-Type: application/json; charset=UTF-8\r\n" .
-                "Accept: application/json\r\n"
-    )
-);
-$context = stream_context_create( $options );
-$result = file_get_contents( $url, false, $context );
-$response = json_decode( $result, true );
-if ($response['updatesAvailable'] == 1) {
-  $showUpdateDiv = "display:block";
-}else{
-  $showUpdateDiv = "display:none";
-}
-
 $remoteState = "<h4 id=\"remoteRunning\">Remote Updates are currently running</h4>";
 if($remoteEnabled == 0) {
   $remoteState = "<h4 id=\"remoteStopped\">Remote Updates are currently stopped</h4>";
@@ -377,13 +360,6 @@ if(is_dir($playlistDirectory)) {
         <div class="justify-content-md-center row" style="padding-bottom: 1em;">
           <div class="col-md-auto">
             <? echo $remoteState; ?>
-          </div>
-        </div>
-        <div style=<? echo "$showUpdateDiv"; ?>>
-          <div id="update" class="justify-content-md-center row">
-            <div class="col-md-auto">
-              <h4 style="font-weight: bold;">An update is available!</h4>
-            </div>
           </div>
         </div>
       </div>

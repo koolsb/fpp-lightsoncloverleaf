@@ -5,11 +5,14 @@ $pluginPath = $settings['pluginDirectory']."/".$pluginName."/";
 $logFile = $settings['logDirectory']."/".$pluginName.".log";
 $pluginConfigFile = $settings['configDirectory'] . "/plugin." .$pluginName;
 $pluginSettings = parse_ini_file($pluginConfigFile);
+$playlistDirectory=$settings['playlistDirectory'];
 
 $remotePlaylistModified = 0;
 $hiddenPlaylistModified = 0;
 $sequenceModified = 0;
 $sequenceCount = 0;
+$playlistModified = 0;
+$playlistCount = 0;
 
 $baseUrl = urldecode($pluginSettings['baseUrl']);
 $apiKey = urldecode($pluginSettings['apiKey']);
@@ -72,6 +75,25 @@ while(true) {
       }
     }
 
+    //check if playlists have been added/removed
+    $updatePlaylists = false;
+    $playlists = listPlaylists();
+    if (count($playlists) != $playlistCount) {
+      updatePlaylists($apiKey);
+      $playlistCount = count($playlists);
+    } else {
+      foreach($playlists as $playlist) {
+        if ($playlist['mtime'] > $playlistModified) {
+          $updatePlaylists = true;
+          $playlistModified = $playlist['mtime'];
+        }
+      }
+      if ($updatePlaylists) {
+        updatePlaylists($apiKey);
+      }
+
+    }
+
   }
 
   sleep(2);
@@ -112,6 +134,39 @@ function updateSequences($apiKey) {
   }
 }
 
+function updatePlaylists($apiKey) {
+  //get sequences
+  $url = "http://127.0.0.1/api/playlists";
+  $options = array(
+    'http' => array(
+      'method'  => 'GET'
+      )
+  );
+  $context = stream_context_create( $options );
+  $sequences = file_get_contents( $url, false, $context );
+  $sequences = json_decode( $sequences, true );
+
+  //post sequences
+  $url = $GLOBALS['baseUrl'] . "/syncPlaylists";
+  $options = array(
+    'http' => array(
+      'method'  => 'POST',
+      'content' => json_encode( $sequences ),
+      'header'=>  "Content-Type: application/json;\r\n" .
+                  "Accept: application/json\r\n" .
+                  "key: $apiKey\r\n"
+      )
+  );
+  $context = stream_context_create( $options );
+  $result = file_get_contents( $url, false, $context );
+  echo $result;
+  if($result) {
+    logEntry("Playlists Updated Automatically");
+  }else {
+    logEntry("Playlist Update Failed");
+  }
+}
+
 function listSequences() {
   $url = "http://127.0.0.1/api/files/sequences";
   $options = array(
@@ -123,6 +178,27 @@ function listSequences() {
   $result = file_get_contents( $url, false, $context );
   $result = json_decode( $result, true );
   return $result['files'];
+}
+
+function listPlaylists() {
+
+  $playlists = array();
+  if(is_dir($GLOBALS['playlistDirectory'])) {
+    if ($dirTemp = opendir($GLOBALS['playlistDirectory'])){
+      while (($fileRead = readdir($dirTemp)) !== false) {
+        if (($fileRead == ".") || ($fileRead == "..")){
+          continue;
+        }
+        $fileName = pathinfo($fileRead, PATHINFO_FILENAME);
+        $fileTime = filemtime($GLOBALS['playlistDirectory'] . '/' . $fileRead);
+        
+        array_push($playlists, array("name"=>$fileName, "mtime"=>$fileTime));
+      }
+      closedir($dirTemp);
+    }
+  }
+
+  return $playlists;
 }
 
 function updateRemotePlaylist($remotePlaylist, $apiKey, $newTime) {
