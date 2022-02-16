@@ -7,6 +7,9 @@ $logFile = $settings['logDirectory']."/".$pluginName.".log";
 $pluginConfigFile = $settings['configDirectory'] . "/plugin." .$pluginName;
 $pluginSettings = parse_ini_file($pluginConfigFile);
 
+//pause to let fppd load
+sleep(20);
+
 WriteSettingToFile("remote_enabled",urlencode("true"),$pluginName);
 WriteSettingToFile("remote_restarting",urlencode("false"),$pluginName);
 

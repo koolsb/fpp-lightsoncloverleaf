@@ -23,6 +23,9 @@ logEntry("Remote Playlist: ".$remotePlaylist);
 $requestFetchTime = intVal(urldecode($pluginSettings['requestFetchTime']));
 logEntry("Request Fetch Time: " . $requestFetchTime);
 
+//pause to let fppd load
+sleep(20);
+
 while(true) {
 
   $pluginSettings = parse_ini_file($pluginConfigFile);
