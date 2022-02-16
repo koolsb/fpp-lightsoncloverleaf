@@ -1,4 +1,5 @@
 <?php
+$skipJSsettings = true;
 include_once "/opt/fpp/www/common.php";
 $pluginName = basename(dirname(__FILE__));
 $pluginPath = $settings['pluginDirectory']."/".$pluginName."/"; 
@@ -89,7 +90,7 @@ while(true) {
         }
       }
       if ($updatePlaylists) {
-        updatePlaylists($apiKey);
+        //updatePlaylists($apiKey);
       }
 
     }
@@ -97,7 +98,7 @@ while(true) {
   }
 
   sleep(2);
-  //break;
+  break;
 
 }
 
@@ -135,7 +136,7 @@ function updateSequences($apiKey) {
 }
 
 function updatePlaylists($apiKey) {
-  //get sequences
+  //get playlists
   $url = "http://127.0.0.1/api/playlists";
   $options = array(
     'http' => array(
@@ -146,7 +147,7 @@ function updatePlaylists($apiKey) {
   $sequences = file_get_contents( $url, false, $context );
   $sequences = json_decode( $sequences, true );
 
-  //post sequences
+  //post playlists
   $url = $GLOBALS['baseUrl'] . "/syncPlaylists";
   $options = array(
     'http' => array(
