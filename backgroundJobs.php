@@ -90,15 +90,14 @@ while(true) {
         }
       }
       if ($updatePlaylists) {
-        //updatePlaylists($apiKey);
+        updatePlaylists($apiKey);
       }
 
     }
 
   }
 
-  sleep(2);
-  break;
+  sleep(300);
 
 }
 
