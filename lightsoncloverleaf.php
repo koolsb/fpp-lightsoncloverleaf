@@ -16,7 +16,6 @@ $apiKey = "";
 $remotePlaylist = "";
 $interruptSchedule = "";
 $currentlyPlayingInRemote = "";
-$nextScheduledInRemote= "";
 $requestFetchTime = "";
 $remoteSequencesCleared = false;
 
@@ -59,16 +58,14 @@ while(true) {
         $currentlyPlaying = pathinfo($fppStatus->current_song, PATHINFO_FILENAME);
       }
       updateCurrentlyPlaying($currentlyPlaying, $GLOBALS['currentlyPlayingInRemote'], $apiKey);
-      updateNextScheduledSequence($fppStatus, $currentlyPlaying, $GLOBALS['nextScheduledInRemote'], $apiKey);
-        $secondsRemaining = intVal($fppStatus->seconds_remaining);
+      $secondsRemaining = intVal($fppStatus->seconds_remaining);
       if ($secondsRemaining < $requestFetchTime) {
         logEntry($requestFetchTime . " seconds remaining, so fetching next request");
           $nextPlaylistInQueue = nextPlaylistInQueue($apiKey);
           $nextSequence = $nextPlaylistInQueue->Sequence;
-          $nextSequenceIndex = $nextPlaylistInQueue->FPPIndex;
           if ($nextSequence != null) {
               logEntry("Queuing requested sequence " . $nextSequence);
-              insertPlaylistAfterCurrent(rawurlencode($remotePlaylist), $nextSequenceIndex);
+              insertPlaylistAfterCurrent(rawurlencode($nextSequence));
               sleep($requestFetchTime);
               updateCurrentlyPlaying($nextSequence, $GLOBALS['currentlyPlayingInRemote'], $remoteToken);
           } else {
@@ -79,7 +76,6 @@ while(true) {
     } else {
       if ($remoteSequencesCleared == 0) {
         updateCurrentlyPlaying(" ", $GLOBALS['currentlyPlayingInRemote'], $apiKey);
-        clearNextScheduledSequence($apiKey);
         $remoteSequencesCleared = true;
       }
     }
@@ -95,36 +91,6 @@ function updateCurrentlyPlaying($currentlyPlaying, $currentlyPlayingInRemote, $a
     logEntry("Updated current playing sequence to " . $currentlyPlaying);
     $GLOBALS['currentlyPlayingInRemote'] = $currentlyPlaying;
   }
-}
-
-function updateNextScheduledSequence($fppStatus, $currentlyPlaying, $nextScheduledInRemote, $remoteToken) {
-  $currentPlaylist = $fppStatus->current_playlist->playlist;
-  $playlistDetails = getPlaylistDetails(rawurlencode($currentPlaylist));
-  $mainPlaylist = $playlistDetails->mainPlaylist;
-  $nextScheduled = getNextSequence($mainPlaylist, $currentlyPlaying);
-  if($nextScheduled != $nextScheduledInRemote && $currentPlaylist != $GLOBALS['remotePlaylist']) {
-    updateNextScheduledSequenceInRemote($nextScheduled, $remoteToken);
-    logEntry("Updated next scheduled sequence to " . $nextScheduled);
-    $GLOBALS['nextScheduledInRemote'] = $nextScheduled;
-  }
-}
-
-function clearNextScheduledSequence($apiKey) {
-  updateNextScheduledSequenceInRemote(" ", $apiKey);
-}
-
-function getNextSequence($mainPlaylist, $currentlyPlaying) {
-  $nextScheduled = "";
-  for ($i = 0; $i < count($mainPlaylist); $i++) {
-    if(pathinfo($mainPlaylist[$i]->sequenceName, PATHINFO_FILENAME) == $currentlyPlaying) {
-      if($i+1 == count($mainPlaylist)) {
-        $nextScheduled = $mainPlaylist[0]->sequenceName;
-      }else {
-        $nextScheduled = $mainPlaylist[$i+1]->sequenceName;
-      }
-    }
-  }
-  return pathinfo($nextScheduled, PATHINFO_FILENAME);
 }
 
 function getFppStatus() {
@@ -150,26 +116,8 @@ function updateNowPlaying($currentlyPlaying, $apiKey) {
   $result = file_get_contents( $url, false, $context );
 }
 
-function updateNextScheduledSequenceInRemote($nextScheduled, $apiKey) {
-  $url = $GLOBALS['baseUrl'] . "/playingNext";
-  $data = array(
-    'sequence' => trim($nextScheduled)
-  );
-  $options = array(
-    'http' => array(
-      'method'  => 'POST',
-      'content' => json_encode( $data ),
-      'header'=>  "Content-Type: application/json; charset=UTF-8\r\n" .
-                  "Accept: application/json\r\n" .
-                  "key: $apiKey\r\n"
-      )
-  );
-  $context = stream_context_create( $options );
-  $result = file_get_contents( $url, false, $context );
-}
-
-function insertPlaylistAfterCurrent($remotePlaylistEncoded, $index) {
-  $url = "http://127.0.0.1/api/command/Insert%20Playlist%20After%20Current/" . $remotePlaylistEncoded . "/" . $index . "/" . $index;
+function insertPlaylistAfterCurrent($remotePlaylistEncoded, $index=0) {
+  $url = "http://127.0.0.1/api/command/Insert%20Playlist%20After%20Current/" . $remotePlaylistEncoded . ".fseq/" . $index . "/" . $index;
   $options = array(
     'http' => array(
       'method'  => 'GET'
@@ -177,18 +125,6 @@ function insertPlaylistAfterCurrent($remotePlaylistEncoded, $index) {
   );
   $context = stream_context_create( $options );
   $result = file_get_contents( $url, false, $context );
-}
-
-function getPlaylistDetails($remotePlaylistEncoded) {
-  $url = "http://127.0.0.1/api/playlist/" . $remotePlaylistEncoded;
-  $options = array(
-    'http' => array(
-      'method'  => 'GET'
-      )
-  );
-  $context = stream_context_create( $options );
-  $result = file_get_contents( $url, false, $context );
-  return json_decode( $result );
 }
 
 function nextPlaylistInQueue($apiKey) {
