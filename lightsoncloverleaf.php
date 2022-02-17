@@ -72,6 +72,7 @@ while(true) {
               logEntry("Queuing requested sequence " . $nextSequence);
               insertPlaylistAfterCurrent(rawurlencode($nextSequence));
               sleep($requestFetchTime);
+              deleteNextPlaylistInQueue($apiKey);
               updateCurrentlyPlaying($nextSequence, $GLOBALS['currentlyPlayingInRemote'], $apiKey);
           } else {
             logEntry("No requests");
@@ -144,6 +145,19 @@ function nextPlaylistInQueue($apiKey) {
   $context = stream_context_create( $options );
   $result = file_get_contents( $url, false, $context );
   return json_decode( $result );
+}
+
+function deleteNextPlaylistInQueue($apiKey) {
+  $url = $GLOBALS['baseUrl'] . "/deleteNextPlaylistInQueue";
+  $options = array(
+    'http' => array(
+      'method'  => 'GET',
+      'header'=>  "key: $apiKey\r\n"
+      )
+  );
+  $context = stream_context_create( $options );
+  $result = file_get_contents( $url, false, $context );
+  return $result;
 }
 
 function logEntry($data) {
