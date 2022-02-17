@@ -22,7 +22,7 @@ $remotePlaylist = urldecode($pluginSettings['remotePlaylist']);
 $hiddenPlaylist = urldecode($pluginSettings['hiddenPlaylist']);
 
 //pause to let fppd load
-//sleep(20);
+sleep(20);
 
 while(true) {
 
@@ -99,7 +99,7 @@ while(true) {
 
   } 
   
-  sleep(10);
+  sleep(300);
 
 }
 
