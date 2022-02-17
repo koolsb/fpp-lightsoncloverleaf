@@ -1,4 +1,5 @@
 <?php
+
 $skipJSsettings = true;
 include_once "/opt/fpp/www/common.php";
 $pluginName = basename(dirname(__FILE__));
@@ -19,12 +20,9 @@ $baseUrl = urldecode($pluginSettings['baseUrl']);
 $apiKey = urldecode($pluginSettings['apiKey']);
 $remotePlaylist = urldecode($pluginSettings['remotePlaylist']);
 $hiddenPlaylist = urldecode($pluginSettings['hiddenPlaylist']);
-logEntry("Remote Playlist: ".$remotePlaylist);
-$requestFetchTime = intVal(urldecode($pluginSettings['requestFetchTime']));
-logEntry("Request Fetch Time: " . $requestFetchTime);
 
 //pause to let fppd load
-sleep(20);
+//sleep(20);
 
 while(true) {
 
@@ -43,6 +41,7 @@ while(true) {
     $hiddenPlaylistModified = 0;
   }
 
+  
   if ($remoteEnabled == 1) {
 
     clearstatcache();
@@ -78,8 +77,8 @@ while(true) {
         updateSequences($apiKey);
       }
     }
-
-    //check if playlists have been added/removed
+    
+    //check if playlists have been added/removed 
     $updatePlaylists = false;
     $playlists = listPlaylists();
     if (count($playlists) != $playlistCount) {
@@ -96,11 +95,11 @@ while(true) {
         updatePlaylists($apiKey);
       }
 
-    }
+    } 
 
-  }
-
-  sleep(300);
+  } 
+  
+  sleep(10);
 
 }
 
@@ -136,6 +135,7 @@ function updateSequences($apiKey) {
     logEntry("Sequence Update Failed");
   }
 }
+
 
 function updatePlaylists($apiKey) {
   //get playlists
@@ -184,7 +184,6 @@ function listSequences() {
 }
 
 function listPlaylists() {
-
   $playlists = array();
   if(is_dir($GLOBALS['playlistDirectory'])) {
     if ($dirTemp = opendir($GLOBALS['playlistDirectory'])){
@@ -320,3 +319,5 @@ function logEntry($data) {
 	fwrite($logWrite, date('Y-m-d h:i:s A',time()).": ".$data."\n");
 	fclose($logWrite);
 }
+
+?>
