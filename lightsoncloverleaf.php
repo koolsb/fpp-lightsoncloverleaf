@@ -72,7 +72,7 @@ while(true) {
               logEntry("Queuing requested sequence " . $nextSequence);
               insertPlaylistAfterCurrent(rawurlencode($nextSequence));
               sleep($requestFetchTime);
-              updateCurrentlyPlaying($nextSequence, $GLOBALS['currentlyPlayingInRemote'], $remoteToken);
+              updateCurrentlyPlaying($nextSequence, $GLOBALS['currentlyPlayingInRemote'], $apiKey);
           } else {
             logEntry("No requests");
             sleep($requestFetchTime);
