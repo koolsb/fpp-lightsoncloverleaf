@@ -22,10 +22,6 @@ $interruptSchedule = "";
 $currentlyPlayingInRemote = "";
 $requestFetchTime = "";
 $remoteSequencesCleared = false;
-$remotePlaylist = urldecode($pluginSettings['remotePlaylist']);
-$hiddenPlaylist = urldecode($pluginSettings['hiddenPlaylist']);
-$remotePlaylistModified = 0;
-$hiddenPlaylistModified = 0;
 
 $baseUrl = urldecode($pluginSettings['baseUrl']);
 $apiKey = urldecode($pluginSettings['apiKey']);
@@ -89,21 +85,6 @@ while(true) {
       }
     }
 
-    /*
-    //check if remote playlist has changed
-    $remotePlaylistFile = "/home/fpp/media/playlists/" . $remotePlaylist . ".json";
-    $lastModifyTime = filemtime($remotePlaylistFile);
-    if ($lastModifyTime > $remotePlaylistModified) {
-    //  updateRemotePlaylist($remotePlaylist, $apiKey, $lastModifyTime);
-    }
-
-    //check if hidden playlist has changed
-    $hiddenPlaylistFile = "/home/fpp/media/playlists/" . $hiddenPlaylist . ".json";
-    $lastModifyTime = filemtime($hiddenPlaylistFile);
-    if ($lastModifyTime > $hiddenPlaylistModified) {
-    //  updateHiddenPlaylist($hiddenPlaylist, $apiKey, $lastModifyTime);
-    }
-    */
   }
 
   //usleep(250000);
