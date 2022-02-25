@@ -11,6 +11,7 @@ $playlistDirectory=$settings['playlistDirectory'];
 
 $remotePlaylistModified = 0;
 $hiddenPlaylistModified = 0;
+$scheduleModified = 0;
 $sequenceModified = 0;
 $sequenceCount = 0;
 $playlistModified = 0;
