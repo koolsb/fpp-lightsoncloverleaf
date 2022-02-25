@@ -39,6 +39,7 @@ while(true) {
     $hiddenPlaylist = urldecode($pluginSettings['hiddenPlaylist']);
     $remotePlaylistModified = 0;
     $hiddenPlaylistModified = 0;
+    $scheduleModified = 0;
   }
 
   
@@ -58,6 +59,13 @@ while(true) {
     $lastModifyTime = filemtime($hiddenPlaylistFile);
     if ($lastModifyTime > $hiddenPlaylistModified) {
       updateHiddenPlaylist($hiddenPlaylist, $apiKey, $lastModifyTime);
+    }
+
+    //check if schedule has changed
+    $scheduleFile = "/home/fpp/media/config/schedule.json";
+    $lastModifyTime = filemtime($scheduleFile);
+    if ($lastModifyTime > $scheduleModified) {
+      updateSchedule($apiKey, $lastModifyTime);
     }
 
     //check if sequences have been added/removed
@@ -101,6 +109,29 @@ while(true) {
   
   sleep(300);
 
+}
+
+function updateSchedule($apiKey, $newTime) {
+  //post schedule json
+  $url = $GLOBALS['baseUrl'] . "/syncSchedule";
+  $data = file_get_contents("/home/fpp/media/config/schedule.json");
+  $options = array(
+    'http' => array(
+      'method'  => 'POST',
+      'content' => $data,
+      'header'=>  "Content-Type: application/json; charset=UTF-8\r\n" .
+                  "Accept: application/json\r\n" .
+                  "key: $apiKey\r\n"
+      )
+  );
+  $context = stream_context_create( $options );
+  $result = file_get_contents( $url, false, $context );
+  if($result) {
+    $GLOBALS['scheduleModified'] = $newTime;
+    logEntry("Schedule Updated Automatically");
+  }else {
+    logEntry("Schedule Automatic Update Failed");
+  }
 }
 
 function updateSequences($apiKey) {
