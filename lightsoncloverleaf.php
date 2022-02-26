@@ -58,10 +58,10 @@ while(true) {
     if ($statusName != "idle") {
       $remoteSequencesCleared = false;
       $currentlyPlaying = pathinfo($fppStatus->current_sequence, PATHINFO_FILENAME);
+      $currentPlaylist = $fppStatus->current_playlist->playlist;
       if ($currentlyPlaying == "") {
         //Might be media only, so check for current song
         $currentlyPlaying = pathinfo($fppStatus->current_song, PATHINFO_FILENAME);
-        $currentPlaylist = $fppStatus->current_playlist;
       }
       updateCurrentlyPlaying($currentlyPlaying, $GLOBALS['currentlyPlayingInRemote'], $apiKey, $currentPlaylist);
       $secondsRemaining = intVal($fppStatus->seconds_remaining);
