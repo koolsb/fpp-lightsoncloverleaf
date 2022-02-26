@@ -61,8 +61,9 @@ while(true) {
       if ($currentlyPlaying == "") {
         //Might be media only, so check for current song
         $currentlyPlaying = pathinfo($fppStatus->current_song, PATHINFO_FILENAME);
+        $currentPlaylist = $fppStatus->current_playlist->playlist;
       }
-      updateCurrentlyPlaying($currentlyPlaying, $GLOBALS['currentlyPlayingInRemote'], $apiKey);
+      updateCurrentlyPlaying($currentlyPlaying, $GLOBALS['currentlyPlayingInRemote'], $apiKey, $currentPlaylist);
       $secondsRemaining = intVal($fppStatus->seconds_remaining);
       if ($secondsRemaining < $requestFetchTime) {
         logEntry($requestFetchTime . " seconds remaining, so fetching next request");
@@ -92,9 +93,9 @@ while(true) {
   sleep(1);
 }
 
-function updateCurrentlyPlaying($currentlyPlaying, $currentlyPlayingInRemote, $apiKey) {
+function updateCurrentlyPlaying($currentlyPlaying, $currentlyPlayingInRemote, $apiKey, $currentPlaylist=NULL) {
   if($currentlyPlaying != $currentlyPlayingInRemote) {
-    updateNowPlaying($currentlyPlaying, $apiKey);
+    updateNowPlaying($currentlyPlaying, $apiKey, $currentPlaylist);
     logEntry("Updated current playing sequence to " . $currentlyPlaying);
     $GLOBALS['currentlyPlayingInRemote'] = $currentlyPlaying;
   }
@@ -108,7 +109,8 @@ function getFppStatus() {
 function updateNowPlaying($currentlyPlaying, $apiKey) {
   $url = $GLOBALS['baseUrl'] . "/nowPlaying";
   $data = array(
-    'sequence' => trim($currentlyPlaying)
+    'sequence' => trim($currentlyPlaying),
+    'playlist' => trim($currentPlaylist)
   );
   $options = array(
     'http' => array(
