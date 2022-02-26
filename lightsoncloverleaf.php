@@ -109,8 +109,8 @@ function getFppStatus() {
 function updateNowPlaying($currentlyPlaying, $apiKey, $currentPlaylist) {
   $url = $GLOBALS['baseUrl'] . "/nowPlaying";
   $data = array(
-    'sequence' => trim($currentlyPlaying,
-    'playlist' => trim($currentPlaylist))
+    'sequence' => trim($currentlyPlaying),
+    'playlist' => trim($currentPlaylist)
   );
   $options = array(
     'http' => array(
