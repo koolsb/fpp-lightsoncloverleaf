@@ -494,7 +494,7 @@ if(is_dir($playlistDirectory)) {
             </div>
             <div class="col-md-6">
             <form method="post">
-                <button class="btn mr-md-3 hvr-underline-from-center btn-danger" id="startRemote" name="startRemote" type="submit">
+                <button class="btn mr-md-3 hvr-underline-from-center btn-primary" id="startRemote" name="startRemote" type="submit">
                   Start Plugin
                 </button>
               </form>
