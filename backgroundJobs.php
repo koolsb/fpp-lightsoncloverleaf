@@ -30,19 +30,10 @@ while(true) {
   $pluginSettings = parse_ini_file($pluginConfigFile);
   $remoteEnabled = urldecode($pluginSettings['remote_enabled']);
   $remoteEnabled = $remoteEnabled == "true" ? true : false;
-  $remoteRestarting = urldecode($pluginSettings['remote_restarting']);
-  $remoteRestarting = $remoteRestarting == "true" ? true : false;
-
-  if($remoteRestarting == 1) {
-    $baseUrl = urldecode($pluginSettings['baseUrl']);
-    $apiKey = urldecode($pluginSettings['apiKey']);
-    $remotePlaylist = urldecode($pluginSettings['remotePlaylist']);
-    $hiddenPlaylist = urldecode($pluginSettings['hiddenPlaylist']);
-    $remotePlaylistModified = 0;
-    $hiddenPlaylistModified = 0;
-    $scheduleModified = 0;
-  }
-
+  $baseUrl = urldecode($pluginSettings['baseUrl']);
+  $apiKey = urldecode($pluginSettings['apiKey']);
+  $remotePlaylist = urldecode($pluginSettings['remotePlaylist']);
+  $hiddenPlaylist = urldecode($pluginSettings['hiddenPlaylist']);
   
   if ($remoteEnabled == 1) {
 

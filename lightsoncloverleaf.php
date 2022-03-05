@@ -11,7 +11,6 @@ $pluginSettings = parse_ini_file($pluginConfigFile);
 sleep(20);
 
 WriteSettingToFile("remote_enabled",urlencode("true"),$pluginName);
-WriteSettingToFile("remote_restarting",urlencode("false"),$pluginName);
 
 echo "Starting Remote Plugin\n";
 logEntry("Starting Remote Plugin");
@@ -34,22 +33,10 @@ while(true) {
   $pluginSettings = parse_ini_file($pluginConfigFile);
   $remoteEnabled = urldecode($pluginSettings['remote_enabled']);
   $remoteEnabled = $remoteEnabled == "true" ? true : false;
-  $remoteRestarting = urldecode($pluginSettings['remote_restarting']);
-  $remoteRestarting = $remoteRestarting == "true" ? true : false;
-
-  if($remoteRestarting == 1) {
-    WriteSettingToFile("remote_enabled",urlencode("true"),$pluginName);
-    WriteSettingToFile("remote_restarting",urlencode("false"),$pluginName);
-
-    echo "Restarting Remote Plugin\n";
-    logEntry("Restarting Remote Plugin");
-    $baseUrl = urldecode($pluginSettings['baseUrl']);
-    $apiKey = urldecode($pluginSettings['apiKey']);
-    $remotePlaylist = urldecode($pluginSettings['remotePlaylist']);
-    logEntry("Remote Playlist: ".$remotePlaylist);
-    $requestFetchTime = intVal(urldecode($pluginSettings['requestFetchTime']));
-    logEntry("Request Fetch Time: " . $requestFetchTime);
-  }
+  $baseUrl = urldecode($pluginSettings['baseUrl']);
+  $apiKey = urldecode($pluginSettings['apiKey']);
+  $remotePlaylist = urldecode($pluginSettings['remotePlaylist']);
+  $requestFetchTime = intVal(urldecode($pluginSettings['requestFetchTime']));
 
   if ($remoteEnabled == 1) {
     //update now playing

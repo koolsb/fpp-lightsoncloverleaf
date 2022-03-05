@@ -39,20 +39,12 @@ if($remoteEnabled == 0) {
 if (isset($_POST['updateBaseUrl'])) { 
   $baseUrl = trim($_POST['baseUrl']);
   WriteSettingToFile("baseUrl",$baseUrl,$pluginName);
-  if($remoteEnabled == 1) {
-    WriteSettingToFile("remote_enabled",urlencode("false"),$pluginName);
-    WriteSettingToFile("remote_restarting",urlencode("true"),$pluginName);
-  }
   echo "<script type=\"text/javascript\">$.jGrowl('Remote Token Updated',{themeState:'success'});</script>";
 }
 
 if (isset($_POST['updateApiKey'])) { 
   $apiKey = trim($_POST['apiKey']);
   WriteSettingToFile("apiKey",$apiKey,$pluginName);
-  if($remoteEnabled == 1) {
-    WriteSettingToFile("remote_enabled",urlencode("false"),$pluginName);
-    WriteSettingToFile("remote_restarting",urlencode("true"),$pluginName);
-  }
   echo "<script type=\"text/javascript\">$.jGrowl('Remote Token Updated',{themeState:'success'});</script>";
 }
 
@@ -111,10 +103,6 @@ if (isset($_POST['updateRemotePlaylist'])) {
         $response = json_decode( $result );
         if($response) {
           WriteSettingToFile("remotePlaylist",$remotePlaylist,$pluginName);
-          if($remoteEnabled == 1) {
-            WriteSettingToFile("remote_enabled",urlencode("false"),$pluginName);
-            WriteSettingToFile("remote_restarting",urlencode("true"),$pluginName);
-          }
           echo "<script type=\"text/javascript\">$.jGrowl('Remote Playlist Updated!',{themeState:'success'});</script>";
         }else {
           echo "<script type=\"text/javascript\">$.jGrowl('Remote Playlist Update Failed!',{themeState:'danger'});</script>";
@@ -203,21 +191,17 @@ if (isset($_POST['updateHiddenPlaylist'])) {
 if (isset($_POST['updateRequestFetchTime'])) { 
   $requestFetchTime = trim($_POST['requestFetchTime']);
   WriteSettingToFile("requestFetchTime",$requestFetchTime,$pluginName);
-  if($remoteFppEnabled == 1) {
-    WriteSettingToFile("remote_enabled",urlencode("false"),$pluginName);
-    WriteSettingToFile("remote_restarting",urlencode("true"),$pluginName);
-  }
   echo "<script type=\"text/javascript\">$.jGrowl('Request Fetch Time Updated',{themeState:'success'});</script>";
 }
 
-if (isset($_POST['restartRemote'])) {
-  $remoteState = "<h4 id=\"remoteRunning\">Remote is currently running</h4>";
-  WriteSettingToFile("remote_enabled",urlencode("false"),$pluginName);
-  WriteSettingToFile("remote_restarting",urlencode("true"),$pluginName);
-}
 if (isset($_POST['stopRemote'])) {
   $remoteState = "<h4 id=\"remoteStopped\">Remote is currently stopped</h4>";
   WriteSettingToFile("remote_enabled",urlencode("false"),$pluginName);
+}
+
+if (isset($_POST['startRemote'])) {
+  $remoteState = "<h4 id=\"remoteStopped\">Remote is currently running</h4>";
+  WriteSettingToFile("remote_enabled",urlencode("true"),$pluginName);
 }
 
 $playlistDirectory= $settings['playlistDirectory'];
@@ -341,11 +325,6 @@ if(is_dir($playlistDirectory)) {
       font-weight: bold;
       color: #A72525;
     }
-    #restartNotice {
-			font-weight: bold;
-      color: #D65A31;
-      visibility: hidden;
-		}
   </style>
 </head>
 <body>
@@ -371,7 +350,7 @@ if(is_dir($playlistDirectory)) {
           <div class="justify-content-md-center row setting-item">
             <div class="col-md-6">
 							<div class="card-title h5">
-								Base URL <span id="restartNotice"> *</span>
+								Base URL
 							</div>
 							<div class="mb-2 text-muted card-subtitle h6">
 								Enter the base URL of your server
@@ -392,7 +371,7 @@ if(is_dir($playlistDirectory)) {
           <div class="justify-content-md-center row setting-item">
             <div class="col-md-6">
 							<div class="card-title h5">
-								API Key <span id="restartNotice"> *</span>
+								API Key
 							</div>
 							<div class="mb-2 text-muted card-subtitle h6">
 								Enter the same API key as set on your server
@@ -413,7 +392,7 @@ if(is_dir($playlistDirectory)) {
           <div class="justify-content-md-center row setting-item">
             <div class="col-md-6">
               <div class="card-title h5">
-                Requestable Playlist <span id="restartNotice"> *</span>
+                Requestable Playlist
               </div>
               <div class="mb-2 text-muted card-subtitle h6">
                 This is the playlist that contains all the sequences to be requested by your viewers
@@ -461,7 +440,7 @@ if(is_dir($playlistDirectory)) {
           <div class="justify-content-md-center row setting-item">
             <div class="col-md-6">
 							<div class="card-title h5">
-								Request Fetch Time <span id="restartNotice"> *</span>
+								Request Fetch Time
 							</div>
 							<div class="mb-2 text-muted card-subtitle h6">
 								This sets when the plugin checks for the next request (default is 10 seconds)
@@ -480,24 +459,7 @@ if(is_dir($playlistDirectory)) {
             <div class="col-md-3">
             </div>
           </div>
-          <!-- Restart Remote -->
-          <div class="justify-content-md-center row setting-item">
-            <div class="col-md-6">
-              <div class="card-title h5">
-                Restart Plugin
-              </div>
-              <div class="mb-2 text-muted card-subtitle h6">
-                This will restart the plugin
-              </div>
-            </div>
-            <div class="col-md-6">
-              <form method="post">
-                <button class="btn mr-md-3 hvr-underline-from-center btn-primary" id="restartRemote" name="restartRemote" type="submit">
-                  Restart Plugin
-                </button>
-              </form>
-            </div>
-          </div>
+          <?php if($remoteEnabled == 1) { ?>
           <!-- Stop Remote -->
           <div class="justify-content-md-center row setting-item">
             <div class="col-md-6">
@@ -517,7 +479,26 @@ if(is_dir($playlistDirectory)) {
               </form>
             </div>
           </div>
-          <span id="restartNotice">* Requires Plugin Restart</span>
+          <?php } else { ?>
+          <!-- Start Remote -->
+          <div class="justify-content-md-center row setting-item">
+            <div class="col-md-6">
+              <div class="card-title h5">
+                Start Plugin 
+              </div>
+              <div class="mb-2 text-muted card-subtitle h6">
+                Start the remote plugin
+              </div>
+            </div>
+            <div class="col-md-6">
+            <form method="post">
+                <button class="btn mr-md-3 hvr-underline-from-center btn-danger" id="startRemote" name="startRemote" type="submit">
+                  Start Plugin
+                </button>
+              </form>
+            </div>
+          </div>
+          <?php } ?>
         </div>
       </div>
     </div>
