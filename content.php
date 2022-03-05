@@ -197,11 +197,13 @@ if (isset($_POST['updateRequestFetchTime'])) {
 if (isset($_POST['stopRemote'])) {
   $remoteState = "<h4 id=\"remoteStopped\">Remote is currently stopped</h4>";
   WriteSettingToFile("remote_enabled",urlencode("false"),$pluginName);
+  $remoteEnabled = false;
 }
 
 if (isset($_POST['startRemote'])) {
   $remoteState = "<h4 id=\"remoteStopped\">Remote is currently running</h4>";
   WriteSettingToFile("remote_enabled",urlencode("true"),$pluginName);
+  $remoteEnabled = true;
 }
 
 $playlistDirectory= $settings['playlistDirectory'];
